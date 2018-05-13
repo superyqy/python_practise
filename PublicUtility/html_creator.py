@@ -2,7 +2,7 @@
 # encoding: utf-8
 '''
 Create table for html page
-@author: Xiuwen Yin
+@author: YQY
 @change: 2017-12-08 create script
 '''
 import sys
@@ -24,7 +24,7 @@ class HTMLCreator(object):
         @summary: find file
         '''
         db_regex = re.compile(r'^db_statistics_\d+.txt$')
-        slam_regx = re.compile(r'^vehicle_quality_summary\.json$')
+        slam_regx = re.compile(r'^quality_summary\.json$')
         result_file = ''
         if 'db' == file_type:
             regx = db_regex
@@ -68,6 +68,7 @@ class HTMLCreator(object):
         @summary: Create table cell and row for statistics
         '''
         tmp_table = ""
+
         for i in range(0, len(name_list)):
             if i == 0 :
                 tmp_table += ("<tr><th rowspan=%s width=\"16%%\">%s</th><td width=\"42%%\" height=\"" + 
@@ -76,22 +77,9 @@ class HTMLCreator(object):
             else:
                 tmp_table += ("<tr><td width=\"42%%\" height=\"" + self.td_height + "px\"><div style=\"margin-left:10px;\">%s</td><td width=\"42%%\" height=\"" + 
                               self.td_height + "px\"><font color=\"%s\"><div align=\"center\">%s</font></td></tr>") % (name_list[i], self.color, num_list[i])
+
         return tmp_table
-    
-    def create_vehicle_slam_statistics_result(self):
-        '''
-        @summary: create vehicle slam quality result
-        '''
-        tmp_table = ''  # store html's table
-        data = ''  # store db statistic source data
-        key_list = []  # store title name
-        value_list = []  # store data value 
-        result_file = self.find_files('vehicle')
-        if '' != result_file:
-            data = self.read_file(result_file)
-        
-        
-        
+
     def create_db_statistics_result(self):
         '''
         @summary: create database's statistic result

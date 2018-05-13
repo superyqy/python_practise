@@ -2,7 +2,7 @@
 # encoding: utf-8
 '''
 @summary: cacluate the length between two gps points
-@author: xiuwen Yin
+@author: YQY
 @change: 2018-03-05 create script
 '''
 from math import *

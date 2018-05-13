@@ -2,7 +2,7 @@
 # encoding: utf-8
 '''
 Search mysql database with sql command
-@author: Xiuwen Yin
+@author: YQY
 @change: 2017-11-30 create script
 '''
 import logging

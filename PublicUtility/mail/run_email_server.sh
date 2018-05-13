@@ -6,4 +6,4 @@ if [ "a$pid" != "a" ]; then
   exit 1
 fi
 
-nohup python ./mail_sender.py > mail_server_output.log 2>&1 &
+nohup python ./mail_sender.py > mapil_server_outut.log 2>&1 &

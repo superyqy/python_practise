@@ -2,7 +2,7 @@
 # encoding: utf-8
 '''
 Log writer, can be invoked by other modules
-@author: Xiuwen Yin
+@author: YQY
 @change: 2017-11-29 create script
 '''
 import logging

@@ -2,7 +2,7 @@
 # encoding: utf-8
 '''
 @summary: sqlite3 operator
-@author: Xiuwen Yin
+@author: YQY
 @change: 2018-02-7 create script
 '''
 import os

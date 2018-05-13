@@ -2,7 +2,7 @@
 # encoding: utf-8
 '''
 @summary: SSH connect and FTP transport
-@author: Xiuwen Yin
+@author: YQY
 @changed: 2018-03-01 create script
 '''
 import paramiko
