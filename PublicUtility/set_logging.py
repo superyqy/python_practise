@@ -17,17 +17,17 @@ def set_logging(log_name=''):
     '''
     log_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
     log_format = logging.Formatter('%(asctime)s %(filename)s:%(funcName)s %(levelname)s [line:%(lineno)d] %(message)s')
-    now = time.strftime('%Y-%m-%d %H:%M', time.localtime(time.time()))
+    now = time.strftime('%Y%m%d%H%M', time.localtime(time.time()))
     log_file = ''
     
     if not os.path.exists(log_folder):  # create log folder
         os.makedirs(log_folder)
         
-    if '' != log_name:  # init log file name
+    if log_name:  # init log file name
         log_file = os.path.join(log_folder, now + '_' + log_name + '.log')
     else:
         log_file = os.path.join(log_folder, now + '_' + 'runing.log')
-    
+    print log_file
     logger = logging.getLogger("CI")  # create one logger object, use CI to specifly from root logging
     logger.setLevel(logging.ERROR)  # set log level switch  critical > error > warning > info > debug,notset
      
