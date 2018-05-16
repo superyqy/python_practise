@@ -6,8 +6,12 @@
 @change: 2018-03-09 create script
 @change:2018-05-15 update script's logic and add comments and doc
 '''
-import requests
 import os
+try:
+	import requests
+except:
+	os.system('sudo -H pip install requests')
+	import requests
 import urllib
 import json
 import configparser
@@ -23,7 +27,22 @@ class APIOperator(object):
 		conf.read(os.path.join(self.current_path,'api_config.ini'))
 		self.server_ip = conf.get('HTTP', 'host')
 		self.port = conf.get('HTTP','port')
+		self.timeout = float(conf.get('HTTP','timeout'))
 		self.logger = set_logging.set_logging('CI')
+
+	def set_ip(self,ip):
+		'''
+		@summary: set api's ip
+		@param ip: string ip
+		'''
+		self.server_ip = ip
+
+	def set_port(self,port):
+		'''
+		@summary: set api's port
+		@param port: string port
+		'''
+		self.port = port
 
 	def assemble_url(self, url_part):
 		'''
@@ -47,30 +66,47 @@ class APIOperator(object):
 
 		return url
 
-	def get(self, url, param={}, auth = ()):
+	def get(self, url, param = {}, auth = (), cookie = {}):
 		'''
         @summary: create GET request
+        @param url: string url
         @param params: dictionary store input parameters
         @param auth: tuple store username and password
+        @param cookie: dictionary store cookie information
         @return: a tuple response, first element is status_code, second is response body
         '''
 		response = None
 
 		self.logger.info('start to get by api, url: {0}, param: {1}, auth: {2}'.format(url, param, auth))
 
-		if auth: # need authorization
+		if auth and not param and not cookie: # need authorization
 			try:
-				response = requests.get(url, auth = auth)
+				response = requests.get(url, auth = auth, timeout=self.timeout)
 			except Exception as e:
 				self.logger.critical('Get failed for: {0}'.format(e))
-		elif param:
+		elif param and not cookie and not auth:
 			try:
-				response = requests.get(url, param=param)
+				response = requests.get(url, param=param, timeout=self.timeout)
+			except Exception as e:
+				self.logger.critical('Get failed for: {0}'.format(e))
+		elif cookie and not param and not auth:
+			try:
+				response = requests.get(url, cookie=cookie, timeout=self.timeout)
+			except Exception as e:
+				self.logger.critical('Get failed for: {0}'.format(e))
+		elif param and auth:
+			try:
+				response = requests.get(url, param=param, auth = auth, timeout=self.timeout)
+			except Exception as e:
+				self.logger.critical('Get failed for: {0}'.format(e))
+		elif param and cookie:
+			try:
+				response = requests.get(url, param=param, cookie=cookie, timeout=self.timeout)
 			except Exception as e:
 				self.logger.critical('Get failed for: {0}'.format(e))
 		else:
 			try:
-				response = requests.get(url)
+				response = requests.get(url, timeout=self.timeout)
 			except Exception as e:
 				self.logger.critical('Get failed for: {0}'.format(e))
 
@@ -93,12 +129,12 @@ class APIOperator(object):
 		if payload:
 			if isinstance(payload,dict): # post dictionary
 				try:
-					response = requests.post(url,data=payload)
+					response = requests.post(url,data=payload, timeout=self.timeout)
 				except Exception as e:
 					self.logger.critical('Post failed for: {0}'.format(e))
 			else:  # post string in json format
 				try:
-					response = requests.post(url,data=json.dumps(payload))
+					response = requests.post(url,data=json.dumps(payload), timeout=self.timeout)
 				except Exception as e:
 					self.logger.critical('Post failed for: {0}'.format(e))
 
@@ -107,6 +143,21 @@ class APIOperator(object):
 
 		return status_code, response_body
 
+	def put(self,url, payload):
+		'''
+		:param url:
+		:param payload:
+		:return:
+		'''
+		pass
+
+	def delete(self,url,payload):
+		'''
+		:param url:
+		:param payload:
+		:return:
+		'''
+		pass
 
 def operate_api(url_part, params = {}, payload={}, request_type = 'get'):
 	'''
