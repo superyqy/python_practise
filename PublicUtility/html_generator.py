@@ -10,7 +10,6 @@ import os
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-
 class HtmlGenerator(object):
 	def __init__(self):
 		pass
