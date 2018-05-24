@@ -10,7 +10,6 @@ Create a excel handler to read and write excel file
 # http://www.open-open.com/lib/view/open1472701496085.html
 #https://blog.csdn.net/chengxuyuanyonghu/article/details/54951399   参考这个
 
-# from PublicUtility import set_logging
 import  set_logging
 import time
 import os
