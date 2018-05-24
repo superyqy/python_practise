@@ -53,9 +53,8 @@ def get_all_bug(session_id):
 	:return:
 	'''
 	bug_list = []
-	product_type = 2 #信贷
+	product_type = 2 #loan
 	all_bug_url = 'http://{0}:{1}/zentao/bug-browse-{2}-0-unclosed-0.json?sid={3}'.format(all_config.IP_CHANDAO, all_config.PORT, product_type, session_id)
-	# single_bug='http://10.1.10.42:81/zentao/bug-view-3296.json?sid={0}'.format(session_id)
 	header = {"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 	          "Accept-Encoding": "gzip, deflate",
 	          "Accept-Language": "zh-CN,zh;q=0.9",

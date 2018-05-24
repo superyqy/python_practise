@@ -5,8 +5,8 @@ auto send email to specified email receiver
 @author: YQY
 @change: 2018-05-12 create email script
 @change: 2018-05-13 add basic functions for email server
+@change: 2018-05-24 fix bug and add read config.ini refresh function
 '''
-
 import os
 import time
 import configparser
@@ -34,21 +34,16 @@ class EmailSender(object):
 		'''
 		@summary: search email path for email file and send email
 		'''
-		print self.email_path
 		if os.path.exists(self.email_path):
-			print 'exsit'
 			files = os.listdir(self.email_path)
 			for file in files:
 				summary, branch, email_to_list = self._match_email_config(file)
-				print len(email_to_list)
 				if email_to_list:
-					print 'find'
 					subject = "{0}_{1}".format(summary + "_" + branch, time.strftime('%Y-%m-%d_%H:%M:%S'))
 					content = self._read_file_content(os.path.join(self.email_path, file))
 					self._send_email(content, subject, email_to_list)
 					self._move_sent_mail_to_backup_folder(os.path.join(self.email_path, file))
 		else:
-			print 'create'
 			os.makedirs(self.email_path)
 
 	def _move_sent_mail_to_backup_folder(self, email_file):
@@ -58,6 +53,7 @@ class EmailSender(object):
 		backup_path=os.path.join(CURRENT_DIR, 'sent_backup')
 		if not os.path.exists(backup_path): # create backup folder if not exist
 			os.makedirs(backup_path)
+
 		if os.path.exists(email_file): # backup email file
 			email_name=email_file.split(".")
 			email_new_name = email_name[0] + "_" + time.strftime('%Y%m%d%H%M%S') + "." + email_name[1]
@@ -119,9 +115,7 @@ class EmailSender(object):
 		msg['Subject'] = Header(subject,'utf-8')
 		msg['From'] = Header(self.email_from, 'utf-8')
 		# smtp =smtplib.SMTP()
-		smtp=smtplib.SMTP_SSL(self.email_server.encode("UTF-8"), self.port.encode("UTF-8"))
-		# smtp = smtplib.SMTP_SSL('smtp.qq.com','465')
-		# smtp.connect('smtp.qq.com')
+		smtp=smtplib.SMTP_SSL(self.email_server.encode('unicode-escape'), self.port.encode('unicode-escape'),)
 		smtp.connect(self.email_server)
 		smtp.login(self.username,self.password)
 		smtp.sendmail(self.sender, email_receiver_list, msg.as_string())
@@ -136,7 +130,7 @@ def run_email_server(email_path=os.path.join(os.path.dirname(os.path.abspath(__f
 	conf.read(email_config_path)
 	config_file_last_modify = os.path.getmtime(email_config_path)
 
-	while 1:
+	while 1:  # run forever
 		if config_file_last_modify != os.path.getmtime(email_config_path): # if config.ini changed, read again
 			config_file_last_modify = os.path.getmtime(email_config_path)
 			conf.read(email_config_path)

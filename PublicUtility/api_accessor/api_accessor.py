@@ -15,7 +15,7 @@ except:
 import urllib
 import json
 import configparser
-import set_logging
+from PublicUtility import set_logging
 
 class APIAccessor(object):
 	'''
