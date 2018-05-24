@@ -6,8 +6,15 @@
 @changed: 2018--05-24 create script
 '''
 
-#####################chandao#############################
+#chandao#
 IP_CHANDAO='10.1.10.42'
 PORT='81'
 USERNAME_CHANDAO = 'yinxiuwen'
 PASSWORD_CHANDAO = '123456'
+
+#html#
+TD_HEIGHT='40'
+TABLE_WIDTH='1200'
+BORDER='1'
+ALIGNMENT='left'
+

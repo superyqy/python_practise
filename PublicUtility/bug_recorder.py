@@ -2,9 +2,10 @@
 # encoding: utf-8
 '''
 Create a common script fot get bug list from 禅道 bug_lst and generate html file
+管理员账号登录禅道>后台>二次开发>Bug， 可获取相关API
+相关资料： http://devel.cnezsoft.com/book/extension/api-intro-43.html
 @author: YQY
 @changed: 2018-05-24 create script
-管理员账号登录禅道>后台>二次开发>Bug， 可获取相关API
 '''
 import json
 import requests
@@ -80,6 +81,10 @@ def get_all_bug(session_id):
 	return bug_list
 
 def recorder_bug_and_genereate_html():
+	'''
+	@summary： get unresolved bug list from zentao API and generate html file
+	:return:
+	'''
 	name_list = ['ID','Title','Severity','Opened_by','Assign_to','Open_date','Link']
 	session_id = create_session()
 	title = 'Bug_list'
