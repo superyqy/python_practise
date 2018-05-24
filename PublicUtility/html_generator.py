@@ -7,6 +7,7 @@ public function to create html page
 @change: 2018-03-30 add function to generate time statistics table
 '''
 import os
+import time
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -28,7 +29,7 @@ class HtmlGenerator(object):
 				for value in value_list:
 					tmp_table += '<th height=\"{0}px\" <div align=\"center\">{1}</th>'.format(height, value)
 			tmp_table += "</tr>"
-		elif value_list and len(value_list) == len(name_list):
+		elif value_list and len(value_list) == len(name_list):  #only one row data
 			tmp_table += '<tr>'
 			for name in name_list:
 				tmp_table += '<th height=\"{0}px\" <div align=\"center\">{1}</th>'.format(height, name)
@@ -37,45 +38,38 @@ class HtmlGenerator(object):
 			for value in value_list:
 				tmp_table += '<td height=\"{0}px\" <div align=\"center\">{1}</td>'.format(height, value)
 			tmp_table += "</tr>"
-
+		elif isinstance(value_list[0], list):
+			tmp_table += '<tr>'
+			for name in name_list:
+				tmp_table += '<th height=\"{0}px\" <div align=\"left\">{1}</th>'.format(height, name)
+			tmp_table += "</tr>"
+			for row in value_list:
+				tmp_table += "<tr>"
+				for value in row:
+						tmp_table += '<td height=\"{0}px\" <div align=\"left\">{1}</td>'.format(height, value)
+				tmp_table += "</tr>"
 		return tmp_table
 
-	def create_html(self, scenario, title, current_date, value_list, name_list=[], current_round=''):
+	def create_html(self, title, value_list, name_list=[]):
 		'''
 		@summary: create html page
 		'''
 		if 0 < len(value_list):
-			folder = os.path.join(CURRENT_DIR, current_date + '/' + scenario)
+			current_date = time.strftime('%Y%m%d')
+			current_time = time.strftime('%Y%m%d%H%M')
+			folder = os.path.join(CURRENT_DIR, current_date )
 			if not os.path.exists(folder):
 				os.makedirs(folder)
-			scenario_html = os.path.join(folder, '{0}_{1}_{2}.html'.format(scenario, title, current_date))
-			tmp_table = ''
-			if '' != current_round:
-				tmp_table += '####### {0} round{1} statistics  #######'.format(scenario, current_round)
+			result_html = os.path.join(folder, '{0}_{1}.html'.format(title, current_time))
+			tmp_table = '<br>'
 
-			tmp_table += '<table border="1" width=\"800px\">'
+			tmp_table += '<table border="1" width=\"1400px\">'
 			tmp_table += self.create_tr(name_list=name_list, value_list=value_list)
 			tmp_table += '</table>'
-			tmp_table += ''
-			with open(scenario_html, 'a') as f:
+			tmp_table += '<br>'
+			with open(result_html, 'a') as f:
 				f.writelines(tmp_table)
-				print 'genereated html: {0}'.format(scenario_html)
-
-def check_file_existence(self, scenario, current_date, source_file_path):
-	'''
-	@summary: check whether html file exist in specified path
-	'''
-	file_path = ''
-	target_folder = os.path.join(source_file_path, current_date)
-	target_file = '{0}_processing_time_{1}.html'.format(scenario, current_date)
-	for root, dir, files in os.walk(target_folder):
-		for file in files:
-			if file == target_file:
-				file_path = os.path.join(root, file)
-				break
-
-	return file_path
-
+				print 'genereated html: {0}'.format(result_html)
 
 if __name__ == '__main__':
 	pass
