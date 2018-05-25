@@ -240,8 +240,10 @@ class ExcelWriter(object):
 
 	def write_cell(self,sheet_name, row, column, data, overwrite = False):
 		sheet = None
+		excel_file = os.path.basename(self.file_path)
+
 		if not overwrite:
-			oldWb = xlrd.open_workbook(self.file_path, formatting_info=True)
+			oldWb = xlrd.open_workbook(gConst['xls'][excel_file])
 			newWb = copy(oldWb)
 			sheet = newWb.get_sheet(sheet_name)
 		else:
@@ -249,7 +251,7 @@ class ExcelWriter(object):
 
 		if sheet and row>0 and column>0:
 			sheet.write(row-1,column-1,data)#,self.set_style('Arial',220,True))
-			self.workbook.save(self.file_path)
+			self.workbook.save(gConst['xls'][excel_file])
 
 	def write_row(self,data_list):
 		pass
@@ -271,7 +273,7 @@ def write_excel():
 	current_dir = os.path.join(os.path.dirname(__file__),'files')
 	file_path = current_dir + r"\testdata.xls"
 	writer = ExcelWriter(file_path)
-	writer.write_cell(sheet_name, row=2, column=2, data='teaast')
+	writer.write_cell(sheet_name, row=5, column=1, data='teaast')
 
 
 def read_excel():
@@ -289,7 +291,7 @@ def read_excel():
 	print reader.get_row(sheet,1)  # get row data
 	print reader.get_column(sheet,1)  # get column data
 	print reader.get_date_from_cell(sheet,1,1)  # get date from cell
-	print reader.get_merged_cell(sheet,8,5)
+	print reader.get_merged_cell(sheet,8,5)  # get merged cell data
 
 if __name__ == "__main__":
 	# read_excel()
