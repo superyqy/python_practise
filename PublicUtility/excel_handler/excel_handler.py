@@ -5,13 +5,13 @@ Create a excel handler to read and write excel file
 @author: YQY
 @change: 2018-05-22 create script, add excel reader
 @change: 2018-05-23 add new function to get sheet by index
+@change: 2018-05-28 add new function to write excel and delete data
 '''
-# https://blog.csdn.net/chengxuyuanyonghu/article/details/54951399
-# http://www.open-open.com/lib/view/open1472701496085.html
-#https://blog.csdn.net/chengxuyuanyonghu/article/details/54951399   参考这个
+
 
 import time
 import os
+# import platform
 try:
 	import xlrd
 except:
@@ -27,7 +27,12 @@ try:
 except:
 	os.system("sudo -H pip install xlutils")
 	from xlutils.copy import copy
-
+# if 'Windows' == platform.system():
+# 	try:
+# 		import win32com.client
+# 	except:
+# 		os.system("sudo -H pip install pywin32")
+# 		import win32com.client
 
 class ExcelReader(object):
 	def __init__(self,file_path):
@@ -212,16 +217,16 @@ class ExcelWriter(object):
 		font = xlwt.Font()  # 为样式创建字体
 		font.name = name  # 'Times New Roman'
 		font.bold = bold
-		font.color_index = 4
+		font.color_index = 8
 		font.height = height
-		# borders= xlwt.Borders() # 创建单元格边框样式
-		# borders.left= 6
-		# borders.right= 6
-		# borders.top= 6
-		# borders.bottom= 6
+		borders= xlwt.Borders() # 创建单元格边框样式
+		borders.left= 6
+		borders.right= 6
+		borders.top= 6
+		borders.bottom= 6
 
 		style.font = font
-		# style.borders = borders
+		style.borders = borders
 
 		return style
 
@@ -238,43 +243,145 @@ class ExcelWriter(object):
 
 		return sheet
 
-	def write_cell(self,sheet_name, row, column, data, overwrite = False):
+	def copy_exist_excel(self,sheet_name):
+		'''
+		@summary: read old excel workbook and copy as a new workbook
+		:param sheet_name:
+		:return: sheet object
+		'''
 		sheet = None
-		excel_file = os.path.basename(self.file_path)
+		new_workbook = None
 
-		if not overwrite:
-			oldWb = xlrd.open_workbook(gConst['xls'][excel_file])
-			newWb = copy(oldWb)
-			sheet = newWb.get_sheet(sheet_name)
-		else:
-			sheet = self.create_sheet(sheet_name)
+		if os.path.exists(self.file_path):
+			old_workbook = xlrd.open_workbook(self.file_path)  # read old excel workbook and copy as a new workbook
+			new_workbook = copy(old_workbook)
+			sheet = new_workbook.get_sheet(sheet_name)
 
-		if sheet and row>0 and column>0:
-			sheet.write(row-1,column-1,data)#,self.set_style('Arial',220,True))
-			self.workbook.save(gConst['xls'][excel_file])
+		return sheet,new_workbook
 
-	def write_row(self,data_list):
-		pass
+	def create_new_excel(self,sheet_name):
+		'''
+		@summary create new workbook and sheet
+		:param sheet_name:
+		:return:
+		'''
+		sheet = None
+		new_workbook = None
 
-	def write_column(self,data_list):
-		pass
+		if not os.path.exists(self.file_path):
+			new_workbook = xlwt.Workbook()
+			sheet = new_workbook.add_sheet(sheet_name)
+
+		return sheet,new_workbook
+
+	def write_cell(self,sheet_name, data='', row=0, column=0, is_clear = False):
+		'''
+		@summary write cell data, new or overwrite
+		@param: is_clear, false add data to cell, True clear cell
+		'''
+		sheet = None
+		new_workbook = None
+
+		if os.path.exists(self.file_path):  # copy old workbook if excel file exist
+			sheet,workbook = self.copy_exist_excel(sheet_name)
+		else:   # create a new workbook and new sheet if excel file doesn't exist
+			sheet,workbook = self.create_new_excel(sheet_name)
+
+		if sheet and workbook and row>0 and column>0:
+			try:
+				if not is_clear:
+					sheet.write(row-1,column-1,data,self.set_style('Arial',220,True)) # write excel
+				elif is_clear:
+					sheet.write(row - 1,column - 1,data) # used for clear cell value
+				workbook.save(self.file_path)
+			except Exception as e:
+				print 'Write sheet failed for: {0}'.format(e)
+
+	def write_row(self,sheet_name,data_list, row):
+		'''
+		@summary write row
+		:param data_list:
+		:param row:
+		:return:
+		'''
+		if data_list and row>0 and sheet_name:
+			for i in range(len(data_list)):
+				column = i+1
+				self.write_cell(sheet_name,data_list[i],row,column)
+
+	def write_column(self,sheet_name,data_list,column):
+		'''
+		@summary:write column
+		:param sheet_name:
+		:param data_list:
+		:param column:
+		:return:
+		'''
+		if data_list and column>0 and sheet_name:
+			for i in range(len(data_list)):
+				row = i+1
+				self.write_cell(sheet_name,data_list[i],row,column)
+
+	def clear_cell(self,sheet_name,row,column):
+		'''
+		@summary: clear data in cell
+		:param sheet_name:
+		:param row:
+		:param column:
+		:return:
+		'''
+		self.write_cell(sheet_name,row=row,column=column,is_clear=True)
+
+	def clear_row(self,sheet_name,row, column):
+		'''
+		@summary: clear specifiled row's data, end at column number
+		:param sheet_name:
+		:param row:
+		:param column:
+		:return:
+		'''
+		for i in range(column):
+			self.write_cell(sheet_name,row=row,column=i,is_clear=True)
+
+	def clear_column(self,sheet_name,row, column):
+		'''
+		@summary clear specifiled columns' data, end at row number
+		:param sheet_name:
+		:param row:
+		:param column:
+		:return:
+		'''
+		for i in range(row):
+			self.write_cell(sheet_name,row=i,column=column,is_clear=True)
 
 	def merge_cell(self,row,column):
 		pass
 
-	def remove_row(self,row):
+	def delete_row(self,sheet_name,row):
 		pass
+		# if os.path.exists(self.file_path):
+		# 	if sheet_name and row >0:
+		# 		sheet = win32com.client.Dispatch('Excel.Application').Workbooks.Open(self.file_path).Worksheets(sheet_name)
+		# 		sheet.Rows(row-1).Delete()
 
-	def remove_column(self,column):
+	def delete_column(self,column):
 		pass
 
 def write_excel():
+	'''
+	@summary all method examples for write excel
+	:return:
+	'''
 	sheet_name = 'Sheet1'
 	current_dir = os.path.join(os.path.dirname(__file__),'files')
 	file_path = current_dir + r"\testdata.xls"
 	writer = ExcelWriter(file_path)
-	writer.write_cell(sheet_name, row=5, column=1, data='teaast')
-
+	writer.write_cell(sheet_name, data='teaaaaaaaaaaast', row=8, column=1) # write a single cell
+	writer.write_row(sheet_name,[1,2,3,4,5,6],row=4)  # write a whole row
+	writer.write_column(sheet_name,[1,2,3,4,5,6],column=4)  # write a whole column
+	writer.clear_cell(sheet_name,4,4) # clear cell data
+	writer.clear_row(sheet_name,4, 4) # clear specifiled row and column
+	writer.clear_column(sheet_name,4,4)
 
 def read_excel():
 	'''
@@ -294,5 +401,5 @@ def read_excel():
 	print reader.get_merged_cell(sheet,8,5)  # get merged cell data
 
 if __name__ == "__main__":
-	# read_excel()
+	read_excel()
 	write_excel()
