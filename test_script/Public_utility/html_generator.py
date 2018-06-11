@@ -8,6 +8,7 @@ public function to create html page
 '''
 import os
 import time
+
 import all_config
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -63,8 +64,8 @@ class HtmlGenerator(object):
 				os.makedirs(folder)
 			result_html = os.path.join(folder, '{0}_{1}.html'.format(title, current_time))
 			tmp_table = '<br>'
-			tmp_table += '<table border="{0}" width=\"{1}px\">'.format(all_config.BORDER, all_config.TABLE_WIDTH)
-			tmp_table += self.create_tr(name_list=name_list, value_list=value_list, height=all_config.TD_HEIGHT)
+			tmp_table += '<table border="{0}" width=\"{1}px\">'.format(all_config.BORDER,all_config.TABLE_WIDTH)
+			tmp_table += self.create_tr(name_list=name_list,value_list=value_list,height=all_config.TD_HEIGHT)
 			tmp_table += '</table>'
 			tmp_table += '<br>'
 			with open(result_html, 'a') as f:

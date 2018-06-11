@@ -7,7 +7,9 @@
 '''
 import os
 import sqlite3
+
 import set_logging
+
 
 class SqliteOperator(object):
     def __init__(self, db_name='sqlite.db'):

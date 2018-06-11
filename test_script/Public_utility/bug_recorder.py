@@ -9,15 +9,17 @@ Create a common script fot get bug list from 禅道 bug_lst and generate html fi
 '''
 import json
 import requests
-import html_generator
 import all_config
+import html_generator
+
 
 def create_session():
 	'''
 	@summary: create session and return sessionID
 	'''
 	session_id=''
-	get_session_url = 'http://{0}:{1}/zentao/api-getsessionid.json?m=api&f=getSessionID&t=json'.format(all_config.IP_CHANDAO,all_config.PORT)
+	get_session_url = 'http://{0}:{1}/zentao/api-getsessionid.json?m=api&f=getSessionID&t=json'.format(
+		all_config.IP_CHANDAO,all_config.PORT)
 
 	response = requests.get(get_session_url)
 	if 200 == response.status_code:
@@ -36,7 +38,8 @@ def login_chandao(session_id):
 	login_status = False
 	username = all_config.USERNAME_CHANDAO
 	password = all_config.PASSWORD_CHANDAO
-	login_url = 'http://{0}:{1}/zentao/user-login.json?f=login&t=json&sid={2}&account={3}&password={4}'.format(all_config.IP_CHANDAO, all_config.PORT, session_id, username, password)
+	login_url = 'http://{0}:{1}/zentao/user-login.json?f=login&t=json&sid={2}&account={3}&password={4}'.format(
+		all_config.IP_CHANDAO,all_config.PORT,session_id,username,password)
 
 	response = requests.post(login_url)
 	if 200 == response.status_code:
@@ -54,7 +57,7 @@ def get_all_bug(session_id):
 	'''
 	bug_list = []
 	product_type = 2 #loan
-	all_bug_url = 'http://{0}:{1}/zentao/bug-browse-{2}-0-unclosed-0.json?sid={3}'.format(all_config.IP_CHANDAO, all_config.PORT, product_type, session_id)
+	all_bug_url = 'http://{0}:{1}/zentao/bug-browse-{2}-0-unclosed-0.json?sid={3}'.format(all_config.IP_CHANDAO,all_config.PORT,product_type,session_id)
 	header = {"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 	          "Accept-Encoding": "gzip, deflate",
 	          "Accept-Language": "zh-CN,zh;q=0.9",
@@ -71,7 +74,8 @@ def get_all_bug(session_id):
 			bug_id = bug.split('",')[0]
 			bug_title = bug.split('"title":"')[1].split('","')[0]
 			bug_severity = bug.split('"severity":"')[1].split('","')[0]
-			bug_link = '<a href="http://{0}:{1}/zentao/bug-view-{2}.html">http://{0}:{1}/zentao/bug-view-{2}.html</a>'.format(all_config.IP_CHANDAO, all_config.PORT, bug_id)
+			bug_link = '<a href="http://{0}:{1}/zentao/bug-view-{2}.html">http://{0}:{1}/zentao/bug-view-{2}.html</a>'.format(
+				all_config.IP_CHANDAO,all_config.PORT,bug_id)
 			bug_assign_to = bug.split('"assignedTo":"')[1].split('","')[0]
 			bug_open_date = bug.split('openedDate":"')[1].split('","')[0]
 			bug_opened_by = bug.split('openedBy":"')[1].split('","')[0]

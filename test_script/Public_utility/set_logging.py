@@ -41,7 +41,25 @@ def set_logging(log_name=''):
     logger.addHandler(console_handler)
     
     return logger
-    
+
+def log_event(func):
+    '''
+    @summary 记录日志的装饰器
+    :param func:
+    :return function result
+    '''
+    logger = set_logging()
+
+    def wrapper(*args, **kwargs):
+        logger.info('invoke {0}'.format(func.__name__))
+        result = func(*args, **kwargs)
+        logger.info('return result: {0}'.format(result))
+
+        return result
+
+    return wrapper
+
+
 if __name__ == '__main__':
     pass
     

@@ -15,7 +15,7 @@ except:
 import urllib
 import json
 import configparser
-from PublicUtility import set_logging
+import set_logging
 
 class APIAccessor(object):
 	'''
@@ -181,6 +181,21 @@ def operate_api(url_part, params = {}, payload={}, request_type = 'get'):
 
 	return status_code, response_body
 
+def compare_status_code(status_code):
+	'''
+	@summary: compare status code
+	@param: int status_code
+	@return: bool result
+	'''
+	result = False
+
+	if status_code:
+		if 200 == status_code:
+			result = True
+	else:
+		print 'Status code is empty, please check your input parameter！'
+
+	return result
 
 if __name__ == '__main__':
 	pass
