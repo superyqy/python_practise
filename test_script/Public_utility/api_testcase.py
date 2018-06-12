@@ -10,7 +10,6 @@ from api_accessor import api_accessor
 import requests
 from set_logging import log_event
 from excel_handler import excel_handler
-from api_accessor import api_accessor
 
 @log_event
 def test_api():
