@@ -13,9 +13,11 @@ from excel_handler import excel_handler
 
 @log_event
 def test_api():
-	r = requests.get('https://api.github.com/user', auth=('XXXXXXXXXXXXXX', 'XXXXXXXXXXXX'))
+	# r = requests.get('http://10.1.10.91:9002/lx/openapi/salesman/qualification')
+	req_param = {"loanContractNo":"SZFT201806120002"}
+	status_code, body = api_accessor.operate_api(url_part=r"/business/p2pAppInfoAction.do",params=req_param,request_type='post')
 
-	return r.status_code, r.json()
+	return status_code, body
 
 def read_excel(file_path):
 	request_params = {}  # store request parameter
@@ -83,20 +85,22 @@ def compare_response_parameter(response_data, standard_data, compare_type='in'):
 def testcase_one(file_path):
 	false_count = 0
 
-	request_params, standard_data = read_excel(file_path)  # get standard data and compare type from excel
+	# request_params, standard_data = read_excel(file_path)  # get standard data and compare type from excel
 	status_code, result_data = test_api()  # get api response code and body
-
-	if api_accessor.compare_status_code(status_code):
-		if result_data:
-			if isinstance(result_data, dict):
-				for key,value in result_data.items():
-					if key in standard_data.keys():
-						result = compare_response_parameter(value,standard_data[key][0],standard_data[key][1])
-						if not result:
-							false_count +=1
-	print '##########'
-	print false_count
-	print '##########'
+	print status_code
+	print result_data
+	# return
+	# if api_accessor.compare_status_code(status_code):
+	# 	if result_data:
+	# 		if isinstance(result_data, dict):
+	# 			for key,value in result_data.items():
+	# 				if key in standard_data.keys():
+	# 					result = compare_response_parameter(value,standard_data[key][0],standard_data[key][1])
+	# 					if not result:
+	# 						false_count +=1
+	# print '##########'
+	# print false_count
+	# print '##########'
 
 	return false_count
 

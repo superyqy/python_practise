@@ -14,7 +14,8 @@ except:
 	import requests
 import urllib
 import json
-import configparser
+# import configparser
+import ConfigParser
 import set_logging
 
 class APIAccessor(object):
@@ -23,7 +24,7 @@ class APIAccessor(object):
 	'''
 	def __init__(self):
 		self.current_path = os.path.join(os.path.dirname(__file__),'config')
-		conf = configparser.ConfigParser()
+		conf = ConfigParser.ConfigParser()
 		conf.read(os.path.join(self.current_path,'api_config.ini'))
 		self.server_ip = conf.get('HTTP', 'host')
 		self.port = conf.get('HTTP','port')
@@ -56,7 +57,7 @@ class APIAccessor(object):
 
 		if '' not in [self.server_ip, url_part]:
 			if not url_part.startswith('/'):  # incase input url doesn't starts with '/'
-				url_part = '/'.join(url_part)
+				url_part = '/'+url_part
 				if self.port:
 					url = 'http://{0}:{1}{2}'.format(self.server_ip, self.port, url_part)
 			else:
@@ -86,7 +87,9 @@ class APIAccessor(object):
 				self.logger.critical('Get failed for: {0}'.format(e))
 		elif param and not cookie and not auth:
 			try:
-				response = requests.get(url, param=param, timeout=self.timeout)
+				print url
+				print "###################"
+				response = requests.get(url=url, params=param, timeout=self.timeout)
 			except Exception as e:
 				self.logger.critical('Get failed for: {0}'.format(e))
 		elif cookie and not param and not auth:
@@ -96,12 +99,12 @@ class APIAccessor(object):
 				self.logger.critical('Get failed for: {0}'.format(e))
 		elif param and auth:
 			try:
-				response = requests.get(url, param=param, auth = auth, timeout=self.timeout)
+				response = requests.get(url, params=param, auth = auth, timeout=self.timeout)
 			except Exception as e:
 				self.logger.critical('Get failed for: {0}'.format(e))
 		elif param and cookie:
 			try:
-				response = requests.get(url, param=param, cookie=cookie, timeout=self.timeout)
+				response = requests.get(url, params=param, cookie=cookie, timeout=self.timeout)
 			except Exception as e:
 				self.logger.critical('Get failed for: {0}'.format(e))
 		else:
@@ -173,10 +176,10 @@ def operate_api(url_part, params = {}, payload={}, request_type = 'get'):
 	request_type = request_type.lower()
 
 	if 'get' == request_type:
-		url = api_operator.assemble_url(url_part, params = params)
-		status_code, response_body = api_operator.get(url)
+		url = api_operator.assemble_url(url_part)
+		status_code, response_body = api_operator.get(url,param=params)
 	elif 'post' == request_type:
-		url = api_operator.assemble_url(url_part,params=params)
+		url = api_operator.assemble_url(url_part)
 		status_code,response_body = api_operator.post(url, payload)
 
 	return status_code, response_body
