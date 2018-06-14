@@ -5,6 +5,7 @@
 @author: YQY
 @changed: 2018-06-13 created
 refered link: https://blog.csdn.net/u011054333/article/details/70151857/
+延迟返回、生成随机数、数据库请求、加密
 '''
 import os
 try:
@@ -15,7 +16,8 @@ except:
 
 method_err = {
 	"code": 301,
-	"msg": "请求方式不正确，只支持post请求"
+	"msg": "请求方式不正确，只支持post请求",
+	"other":"test123"
 }
 # 参数错误
 param_err = {
@@ -43,12 +45,15 @@ user_err = {
 # 成功的信息
 success_msg = {
 	"code": 200,
-	"msg": "支付成功"
+	"msg": "支付成功",
+	"tester":"123123"
 }
 
 success_msg_query = {
 	"code":200,
-	"msg:":"query success"
+	"msg:":"query success",
+	"tester":"123123",
+	"成功":"成功123!"
 }
 
 # 数据库异常
@@ -60,10 +65,12 @@ db_err = {
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
-@app.route('/query',methods=["GET"])
+
+@app.route('/query', methods = ["GET"])
 def query():
 	if request.method == "GET":
 		return jsonify(success_msg_query)
+
 
 @app.route('/pay',methods=['POST','GET'])
 def pay():        # 函数里面写的就是接口的业务逻辑了
@@ -79,7 +86,7 @@ def pay():        # 函数里面写的就是接口的业务逻辑了
 			else:  # 如果不是整数也不是小数，返回价格错误
 				return jsonify(param_err)
 		else:  # 如果name或者价格获取不到的话，返回参数错误
-			return jsonify(param_err) #运行程序，debug的意思是调试模式运行，可以看到请求，默认端口号是5000，可以使用port参数指定端口号
+			return jsonify(param_err)
 
-if __name__=='__main__':
-    app.run(debug=True,port=8888)
+if __name__ == '__main__':
+    app.run(debug=True, host ="10.1.4.130", port=8888)  	# 运行程序，debug的意思是调试模式运行，可以看到请求，默认端口号是5000，可以使用port参数指定端口号
