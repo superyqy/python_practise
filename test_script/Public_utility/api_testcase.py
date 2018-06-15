@@ -6,6 +6,7 @@ Create scripts for API automation test
 @change: 2018-06-11 create script
 '''
 import os
+import json
 from api_accessor import api_accessor
 import requests
 from set_logging import log_event
@@ -18,6 +19,7 @@ def test_api():
 	status_code, body = api_accessor.operate_api(url_part=r"/business/p2pAppInfoAction.do",params=req_param,request_type='post')
 
 	return status_code, body
+
 
 def read_excel(file_path):
 	request_params = {}  # store request parameter
@@ -51,7 +53,8 @@ def read_excel(file_path):
 				else:
 					break  # break when reach the response's end
 
-	return request_params, standard_data
+	return request_params, standard_data,request_start_row
+
 
 def compare_response_parameter(response_data, standard_data, compare_type='in'):
 	'''
@@ -82,13 +85,21 @@ def compare_response_parameter(response_data, standard_data, compare_type='in'):
 
 	return compare_result
 
+
 def testcase_one(file_path):
 	false_count = 0
 
-	# request_params, standard_data = read_excel(file_path)  # get standard data and compare type from excel
-	status_code, result_data = test_api()  # get api response code and body
-	print status_code
-	print result_data
+	request_params, standard_data,request_start_row = read_excel(file_path)  # get standard data and compare type from excel
+	print request_params
+	print type(request_params)
+
+	writer = excel_handler.ExcelWriter(file_path)
+	writer.write_cell(sheet_name="Sheet1", data=json.dumps(request_params), row=request_start_row-1, column=4)
+	print 'finish'
+
+	# status_code, result_data = test_api()  # get api response code and body
+	# print status_code
+	# print result_data
 	# return
 	# if api_accessor.compare_status_code(status_code):
 	# 	if result_data:
@@ -106,5 +117,5 @@ def testcase_one(file_path):
 
 
 if __name__ == '__main__':
-	file_path=r"D:\XXX\workspace_python\yqy_ci\test_data\testcase_1.xls"
+	file_path=r"E:\yinxiuwen\yqy_ci\test_data\testcase_1.xls"
 	testcase_one(file_path)
