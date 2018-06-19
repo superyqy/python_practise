@@ -18,6 +18,10 @@ MAX_ROW_SIZE = 300
 MAX_COLUMN_SIZE = 200
 
 class ExcelToJson(object):
+	request_name = "Case Name"  # request parameter start signal
+	first_level = "1st_level"
+	second_level_exist = "2rd_level"
+
 	def __init__(self, work_dir):
 		self.current_min = time.strftime('%Y%m%d%H%M',time.localtime(time.time()))
 		self.current_dir = os.path.dirname(__file__)
@@ -31,9 +35,6 @@ class ExcelToJson(object):
 		:return: dictioanry all_sheet_data to store all sheet's data
 		'''
 		all_sheet_data = {}
-		request_name = "Case Name"  # request parameter start signal
-		first_level = "1st_level"
-		second_level_exist = "2rd_level"
 
 		if os.path.exists(file_path):
 			if file_path.endswith(".xls"):
@@ -42,19 +43,24 @@ class ExcelToJson(object):
 				sheet_name_list = reader.get_sheets_name() # get all sheets' name
 				if sheet_name_list:
 					for sheet_name in sheet_name_list:
-						request_params = {}  # store request parameter
-						request_name_row = []  # store all request start row in excel
+						request_name_row = []  # store all request start row number
+						end_empty_row = 0
 						sheet = reader.get_sheet_object(sheet_name=sheet_name)  #get sheet by sheet name
 						if not sheet:  # skip if sheet doesn't exist
 							continue
 						for i in range(1, 300):
 							name = reader.get_cell(sheet, i, 1)
-							if name == request_name:  # get request parameter name's start row
+							if name == self.request_name:  # get all request parameter name's start row
 								request_name_row.append(i)
 						if request_name_row:
-							parameter_name_dict = {}  # store parameter name row
-							for i in range(len(request_name_row)):
-								parameter_name_dict[i] = self.read_parameter_name(reader, sheet, request_name_row[i])
+							for i in range(request_name_row[-1], 300):  # get the end empty row's number
+								if not reader.get_cell(sheet, i, 1):
+									end_empty_row = i
+									break
+							parameter_name_dict = {}  # store parameter name row-number as key, parameter name as value
+							for i in range(len(request_name_row)):  # get all parameter name
+								parameter_name_dict[request_name_row[i]] = self.read_parameter_name(reader, sheet, request_name_row[i])
+							print parameter_name_dict.keys()
 
 						# 	for i in range(request_start_row, response_start_row-1):  # get request parameters
 						# 		name = reader.get_cell(sheet,i,1)
@@ -69,6 +75,48 @@ class ExcelToJson(object):
 						# all_sheet_data[sheet_name] = [request_params, standard_data,request_start_row] # store all data into dictionary
 
 		return all_sheet_data
+
+
+	def read_parameter_value(self, reader, sheet, row, parameter_name_list):
+		'''
+		@summary read parameter's value
+		:param reader:
+		:param sheet:
+		:param row:
+		:param parameter_name_list:
+		:return:
+		'''
+		request_parameters = {} # parameter name as key, cell value as value
+
+		if reader and sheet and row and parameter_name_list:
+			if self.first_level <> parameter_name_list[0].lower(): #parameter has only one level
+				for i in range(len(parameter_name_list)):
+					parameter_name, parameter_value = self.transfer_data_type(parameter_name_list[i], reader.get_cell(sheet,row,i + 1))
+					request_parameters[parameter_name] = parameter_value
+
+		return request_parameters
+
+	def transfer_data_type(self, parameter_name, data):
+
+		parameter_type = ""
+		parameter_value = ""
+
+		parameter_name = parameter_name
+
+		if ":" in parameter_name: #get parameter type
+			parameter_name, parameter_type = parameter_name.split(":")
+
+		# transfer data type
+		if not parameter_type:
+			parameter_value = data
+		elif "int" in parameter_type.lower():
+			parameter_value = int(data)
+		elif "num" in parameter_type.lower():
+			parameter_value = Decimal(data)
+		else:
+			parameter_value = data
+
+		return parameter_value, parameter_name
 
 	def read_parameter_name(self,reader,sheet, row):
 		'''
@@ -149,12 +197,7 @@ class ExcelToJson(object):
 					self.read_excel(os.path.join(self.work_dir,file))
 
 if __name__ == "__main__":
-	work_dir = r"E:\yinxiuwen\yqy_ci\test_case\testcase_template.xls"    #sys.argv[1]  #
+	work_dir = r"D:\xiuwenYin\workspace_python\yqy_ci\test_case\testcase_template.xls"    #sys.argv[1]  #
 	processor = ExcelToJson(work_dir)
 	processor.get_all_file_request_data()
 
-
-
-	# d = Decimal(-1) / Decimal(3)
-	# print type(d)
-	# print d
