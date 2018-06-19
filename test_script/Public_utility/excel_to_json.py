@@ -12,6 +12,8 @@ import time
 import json
 from excel_handler import excel_handler
 
+REQUEST_NAME="request parameter"
+RESPONSE_NAME="response parameter"
 
 class ExcelToJson(object):
 	def __init__(self, work_dir):
@@ -42,23 +44,24 @@ class ExcelToJson(object):
 						sheet = reader.get_sheet_object(sheet_name=sheet_name)  #get sheet by sheet name
 						for i in range(1,200):
 							name = reader.get_cell(sheet,i,1)
-							if name == 'request parameter':  # get request parameter's start row
+							if name == REQUEST_NAME:  # get request parameter's start row
 								request_start_row = i+1
-							if name == 'response parameter':  #get response parameter's start row
+							if name == RESPONSE_NAME:  #get response parameter's start row
 								response_start_row = i+1
-							if request_start_row>0 and response_start_row >0:
-								for i in range(request_start_row, response_start_row-1):  # get request parameters
-									name = reader.get_cell(sheet,i,1)
+						if request_start_row>0 and response_start_row >0:
+							for i in range(request_start_row, response_start_row-1):  # get request parameters
+								name = reader.get_cell(sheet,i,1)
+								if name:
 									value = reader.get_cell(sheet,i,2)
 									request_params[name] = value
-								for i in range(response_start_row, 200): # get response parameter's name, value and compare type
-									name = reader.get_cell(sheet,i,1)
-									if name:
-										value = reader.get_cell(sheet,i,2)
-										compare_type = reader.get_cell(sheet,i,3)
-										standard_data[name] = [value, compare_type]
-									else:
-										break  # break when reach the response's end
+							for i in range(response_start_row, 200): # get response parameter's name, value and compare type
+								name = reader.get_cell(sheet,i,1)
+								if name:
+									value = reader.get_cell(sheet,i,2)
+									compare_type = reader.get_cell(sheet,i,3)
+									standard_data[name] = [value, compare_type]
+								else:
+									break  # break when reach the response's end
 						if request_params:  # store current sheet's request params into txt file
 							self.write_request_into_file(request_params, sheet_name, file_name)
 
@@ -111,6 +114,6 @@ class ExcelToJson(object):
 					self.read_excel(os.path.join(self.work_dir,file))
 
 if __name__ == "__main__":
-	work_dir = sys.argv[1]
+	work_dir = sys.argv[1]  #
 	processor = ExcelToJson(work_dir)
 	processor.get_all_file_request_data()
