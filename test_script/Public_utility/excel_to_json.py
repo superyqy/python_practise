@@ -52,9 +52,10 @@ class ExcelToJson(object):
 							if name == request_name:  # get request parameter name's start row
 								request_name_row.append(i)
 						if request_name_row:
+							parameter_name_dict = {}  # store parameter name row
 							for i in range(len(request_name_row)):
-								parameter_name = self.read_parameter_name(reader, sheet, request_name_row[i])
-								print parameter_name
+								parameter_name_dict[i] = self.read_parameter_name(reader, sheet, request_name_row[i])
+
 						# 	for i in range(request_start_row, response_start_row-1):  # get request parameters
 						# 		name = reader.get_cell(sheet,i,1)
 						# 		if name:
