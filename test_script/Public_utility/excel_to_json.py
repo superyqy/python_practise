@@ -10,10 +10,12 @@ import os
 import sys
 import time
 import json
+from decimal import Decimal
 from excel_handler import excel_handler
 
-REQUEST_NAME="request parameter"
-RESPONSE_NAME="response parameter"
+
+MAX_ROW_SIZE = 300
+MAX_COLUMN_SIZE = 200
 
 class ExcelToJson(object):
 	def __init__(self, work_dir):
@@ -29,6 +31,9 @@ class ExcelToJson(object):
 		:return: dictioanry all_sheet_data to store all sheet's data
 		'''
 		all_sheet_data = {}
+		request_name = "Case Name"  # request parameter start signal
+		first_level = "1st_level"
+		second_level_exist = "2rd_level"
 
 		if os.path.exists(file_path):
 			if file_path.endswith(".xls"):
@@ -38,36 +43,65 @@ class ExcelToJson(object):
 				if sheet_name_list:
 					for sheet_name in sheet_name_list:
 						request_params = {}  # store request parameter
-						standard_data = {}  # store response parameter
-						request_start_row = 0  # store request start row in excel
-						response_start_row = 0  # store response start row in excel
+						request_name_row = []  # store all request start row in excel
 						sheet = reader.get_sheet_object(sheet_name=sheet_name)  #get sheet by sheet name
-						for i in range(1,200):
-							name = reader.get_cell(sheet,i,1)
-							if name == REQUEST_NAME:  # get request parameter's start row
-								request_start_row = i+1
-							if name == RESPONSE_NAME:  #get response parameter's start row
-								response_start_row = i+1
-						if request_start_row>0 and response_start_row >0:
-							for i in range(request_start_row, response_start_row-1):  # get request parameters
-								name = reader.get_cell(sheet,i,1)
-								if name:
-									value = reader.get_cell(sheet,i,2)
-									request_params[name] = value
-							for i in range(response_start_row, 200): # get response parameter's name, value and compare type
-								name = reader.get_cell(sheet,i,1)
-								if name:
-									value = reader.get_cell(sheet,i,2)
-									compare_type = reader.get_cell(sheet,i,3)
-									standard_data[name] = [value, compare_type]
-								else:
-									break  # break when reach the response's end
-						if request_params:  # store current sheet's request params into txt file
-							self.write_request_into_file(request_params, sheet_name, file_name)
-
-						all_sheet_data[sheet_name] = [request_params, standard_data,request_start_row] # store all data into dictionary
+						if not sheet:  # skip if sheet doesn't exist
+							continue
+						for i in range(1, 300):
+							name = reader.get_cell(sheet, i, 1)
+							if name == request_name:  # get request parameter name's start row
+								request_name_row.append(i)
+						if request_name_row:
+							for i in range(len(request_name_row)):
+								parameter_name = self.read_parameter_name(reader, sheet, request_name_row[i])
+								print parameter_name
+						# 	for i in range(request_start_row, response_start_row-1):  # get request parameters
+						# 		name = reader.get_cell(sheet,i,1)
+						# 		if name:
+						# 			value = reader.get_cell(sheet,i,2)
+						# 			request_params[name] = value
+						#
+						#
+						# if request_params:  # store current sheet's request params into txt file
+						# 	self.write_request_into_file(request_params, sheet_name, file_name)
+						#
+						# all_sheet_data[sheet_name] = [request_params, standard_data,request_start_row] # store all data into dictionary
 
 		return all_sheet_data
+
+	def read_parameter_name(self,reader,sheet, row):
+		'''
+		@summary read parameter name
+		:param reader:
+		:param sheet:
+		:param row:
+		:return:
+		'''
+		name_list = []
+
+		if reader and sheet and row:
+			for i in range(2, MAX_COLUMN_SIZE):
+				cell_value= reader.get_cell(sheet, row, i)
+				if cell_value:
+					name_list.append(cell_value)
+				else:
+					break
+
+		return name_list
+
+
+	def read_single_row(self,reader, sheet, row):
+		'''
+		@summary read single row data
+		:param sheet:
+		:param row:
+		:return:
+		'''
+		case_name = ''
+		parameter_name = []
+
+		if reader and sheet and row:
+			case_name = reader.get_cell(sheet, row, 1)
 
 
 	def write_request_into_file(self,request_params, sheet_name, file_name):
@@ -114,6 +148,12 @@ class ExcelToJson(object):
 					self.read_excel(os.path.join(self.work_dir,file))
 
 if __name__ == "__main__":
-	work_dir = sys.argv[1]  #
+	work_dir = r"E:\yinxiuwen\yqy_ci\test_case\testcase_template.xls"    #sys.argv[1]  #
 	processor = ExcelToJson(work_dir)
 	processor.get_all_file_request_data()
+
+
+
+	# d = Decimal(-1) / Decimal(3)
+	# print type(d)
+	# print d
