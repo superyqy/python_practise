@@ -113,11 +113,17 @@ class ExcelToJson(object):
 			if second_level_index_list[first_level_index]:  # second level exist
 				start_cell = second_level_index_list[first_level_index]
 			else:  # second level not exist
-				if not level_one_index_list[i] == end_cell_index:
-					for i in range(first_level_index, level_one_index_list[i+1]):
-						cell_value = reader.get_cell(sheet, row, i+1)
-						row_dict[parameter_name_list[i]] = cell_value
-
+				last_cell = 0
+				if not first_level_index == end_cell_index:  # didn't reach the end cell
+					last_cell = i + 1
+				else:   # reach the end cell
+					last_cell = end_cell_index
+					second_level_dict = {}
+				for i in range(first_level_index+1, level_one_index_list[last_cell]):
+					parameter_value = reader.get_cell(sheet, row, i)
+					parameter_name = parameter_name_list[i]
+					second_level_dict[parameter_name] = parameter_value
+				row_dict[parameter_name_list[first_level_index]] = second_level_dict
 
 	def get_all_level_one_index(self, parameter_name_list):
 		level_one_index_list = []
