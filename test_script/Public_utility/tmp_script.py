@@ -11,7 +11,6 @@ if __name__ == "__main__":
 	# print r.status_code
 	# print r.json()
 
-	r1 = requests.get(url="http://10.1.4.130:8888/query")
-	print r1.status_code
-	print r1.json()
+	test = [1,3,2,1,4]
+	print test[-1]
 
