@@ -59,7 +59,7 @@ class ExcelToJson(object):
 								parameter_name_dict[request_name_row[i]] = self.read_parameter_name(reader, sheet, request_name_row[i])
 							for key, value in parameter_name_dict.items(): # get parameter value by row
 								row = key
-								parameter_name_list = parameter_name_dict[key]
+								parameter_name_list = parameter_name_dict[row]
 								request_parameters, testcase_name = self.read_parameter_value(reader, sheet, row+1, parameter_name_list)
 
 						# 	for i in range(request_start_row, response_start_row-1):  # get request parameters
@@ -90,16 +90,17 @@ class ExcelToJson(object):
 		if reader and sheet and row and parameter_name_list:
 			level_one_index_list = self.get_all_level_one_index(parameter_name_list)
 			testcase_name = reader.get_cell(sheet, row, 1)
-			print testcase_name
+
 			if not level_one_index_list:  # parameter has only one level
 				pass
 				# for i in range(1,len(parameter_name_list)):
 				# 	parameter_name, parameter_value = self.transfer_data_type(parameter_name_list[i], reader.get_cell(sheet, row, i + 1))
 				# 	request_parameters[parameter_name] = parameter_value
 			else:
-				second_level_index_list = self.get_all_level_two_index(parameter_name_list, level_one_index_list)
-				print second_level_index_list
+				level_two_dict = self.get_level_two_value(parameter_name_list, level_one_index_list, reader, sheet, row)
 
+				# second_level_index_list = self.get_all_level_two_index(parameter_name_list, level_one_index_list)
+				# print second_level_index_list
 
 		return testcase_name, request_parameters
 
@@ -133,6 +134,42 @@ class ExcelToJson(object):
 				level_one_index_list.append(i+1)
 
 		return level_one_index_list
+
+	def get_level_two_value(self,parameter_name_list, level_one_index_list, reader, sheet, row):
+		level_two_dict = {}
+		end_cell_index = len(level_one_index_list) # the end of row
+		print parameter_name_list
+		for i in range(len(level_one_index_list)):
+			level_one_index = level_one_index_list[i]
+			if i+1 == end_cell_index:
+				next_level_one_index = end_cell_index
+			else:
+				next_level_one_index = level_one_index_list[i+1]
+			level_one_name = reader.get_cell(sheet, row, level_one_index)
+			if self.second_level not in parameter_name_list[level_one_index: next_level_one_index]:  # second level doesn't exist
+				each_dict = {}
+				for cell_index in range(level_one_index+1, next_level_one_index):
+					parameter_name = parameter_name_list[cell_index-1]
+					parameter_value = reader.get_cell(sheet, row, cell_index)
+					each_dict[parameter_name] = parameter_value
+				level_two_dict[level_one_name] = each_dict
+			else:   # second level exist
+				each_second_dict = {}
+				level_two_dict[level_one_name] = []
+				current_level_end_index = next_level_one_index-level_one_index+1
+				for cell_index in range(level_one_index+1, next_level_one_index):
+					parameter_name = parameter_name_list[cell_index-1]
+					parameter_value = reader.get_cell(sheet, row, cell_index)
+					if not parameter_name == self.second_level:
+						each_second_dict[parameter_name] = parameter_value
+					next_parameter_name = parameter_name_list[cell_index]
+					if next_parameter_name == self.second_level or cell_index == current_level_end_index:
+						level_two_dict[level_one_name].append(each_second_dict)
+						each_second_dict = {} # clear second dict when reach next second level's start cell
+
+		print level_two_dict
+		print "$$$$$$$$$$$$$$$$$"
+		return level_two_dict
 
 	def get_all_level_two_index(self, parameter_name_list, level_one_index_list):
 		second_level_index_list = {}
@@ -255,7 +292,7 @@ class ExcelToJson(object):
 					self.read_excel(os.path.join(self.work_dir,file))
 
 if __name__ == "__main__":
-	work_dir = r"E:\yinxiuwen\yqy_ci\test_case\testcase_template.xls"    #sys.argv[1]  #
+	work_dir = r"D:\xiuwenYin\workspace_python\yqy_ci\test_case\testcase_template.xls"    #sys.argv[1]  #
 	processor = ExcelToJson(work_dir)
 	processor.get_all_file_request_data()
 
