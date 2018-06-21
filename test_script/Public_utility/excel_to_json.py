@@ -12,7 +12,6 @@ import sys
 import time
 import json
 import re
-from decimal import Decimal
 from excel_handler import excel_handler
 
 
@@ -41,6 +40,8 @@ class ExcelToJson(object):
 				sheet_name_list = reader.get_sheets_name() # get all sheets' name
 				if sheet_name_list:
 					for sheet_name in sheet_name_list:
+						if 'template' == sheet_name.lower():
+							continue
 						request_name_row = []  # store all request start row number
 						end_empty_row = 0
 						current_sheet_all_parameter = {}
@@ -90,7 +91,8 @@ class ExcelToJson(object):
 			testcase_name = reader.get_cell(sheet, row, 1)
 			if not level_one_index_list:  # parameter has only one level
 				for i in range(1,len(parameter_name_list)):
-					parameter_name, parameter_value = self.transfer_data_type(parameter_name_list[i], reader.get_cell(sheet, row, i + 1))
+					parameter_name = parameter_name_list[i]
+					parameter_value = self.transfer_data_type(reader.get_cell(sheet, row, i + 1))
 					request_parameters[parameter_name] = parameter_value
 			else:
 				request_parameters = self.get_level_two_value(parameter_name_list, level_one_index_list, reader, sheet, row)
@@ -146,7 +148,7 @@ class ExcelToJson(object):
 					parameter_name = parameter_name_list[cell_index-1]
 					if parameter_name == self.first_level:  # break when reach the end of current level_1
 						break
-					parameter_value = reader.get_cell(sheet, row, cell_index)
+					parameter_value = self.transfer_data_type(reader.get_cell(sheet, row, cell_index))
 					each_dict[parameter_name] = parameter_value
 				level_two_dict[level_one_name] = each_dict
 			else:   # second level exist
@@ -155,12 +157,12 @@ class ExcelToJson(object):
 				current_level_end_index = next_level_one_index-level_one_index+1
 				for cell_index in range(level_one_index+1, next_level_one_index):
 					parameter_name = parameter_name_list[cell_index-1]
-					parameter_value = reader.get_cell(sheet, row, cell_index)
+					parameter_value = self.transfer_data_type(reader.get_cell(sheet, row, cell_index))
 					if not parameter_name == self.second_level:
 						each_second_dict[parameter_name] = parameter_value
 					next_parameter_name = parameter_name_list[cell_index]
 					if cell_index == end_cell_index-1:
-						each_second_dict[next_parameter_name] = reader.get_cell(sheet, row, cell_index+1)
+						each_second_dict[next_parameter_name] = self.transfer_data_type(reader.get_cell(sheet, row, cell_index+1))
 					if next_parameter_name == self.second_level or cell_index == current_level_end_index or cell_index == end_cell_index-1:
 						level_two_dict[level_one_name].append(each_second_dict)
 						each_second_dict = {}  # clear second dict when reach next second level's start cell
@@ -187,32 +189,23 @@ class ExcelToJson(object):
 
 		return second_level_index_list
 
-	def transfer_data_type(self, parameter_name, data):
-
-		parameter_type = ""
+	def transfer_data_type(self, data):
+		'''
+		@summary transfer number and float data format
+		:param data:
+		:return:
+		'''
 		parameter_value = ""
-		int_number = re.compile("-?\d+")
-		float_number = re.compile("-?\d+\.\d+")  # 匹配负数，浮点数
-		parameter_name = parameter_name
-
-		if ":" in parameter_name:  # get parameter type
-			parameter_name, parameter_type = parameter_name.split(":")
-		# # transfer data type
-		# if not parameter_type:
-		# 	parameter_value = data
-		# elif "int" in parameter_type.lower():
-		# 	parameter_value = int(data)
-		# elif "num" in parameter_type.lower():
-		# 	parameter_value = long(data)
-		# else:
-		# 	parameter_value = data
+		int_number = re.compile("^-?\d+$")  #  匹配整数
+		float_number = re.compile("^-?\d+\.\d+$")  # 匹配负数，浮点数
 
 		if isinstance(data,unicode):
 			data = data.encode('unicode-escape').decode('string_escape')
 		else:
 			data = str(data)
-		print data
-		print "$#$$$$$$$$$$$$$$"
+			if data.endswith(".0"):
+				data = data.split(".")[0]
+
 		if int_number.match(data):
 			parameter_value = long(data)
 		elif float_number.match(data):
@@ -220,7 +213,7 @@ class ExcelToJson(object):
 		else:
 			parameter_value = data
 
-		return parameter_name, parameter_value
+		return  parameter_value
 
 	def read_parameter_name(self, reader, sheet, row):
 		'''
@@ -298,7 +291,7 @@ class ExcelToJson(object):
 						self.write_request_into_file(result_folder, excel_file_name, sheet_name, testcase_name, request_params)
 
 if __name__ == "__main__":
-	work_dir = r"E:\yinxiuwen\yqy_ci\test_case\testcase_template.xls" #sys.argv[1]
+	work_dir = sys.argv[1]
 	processor = ExcelToJson(work_dir)
 	processor.get_all_file_request_data()
 
