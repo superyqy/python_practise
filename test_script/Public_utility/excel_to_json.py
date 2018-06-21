@@ -11,6 +11,7 @@ import os
 import sys
 import time
 import json
+import re
 from decimal import Decimal
 from excel_handler import excel_handler
 
@@ -190,21 +191,34 @@ class ExcelToJson(object):
 
 		parameter_type = ""
 		parameter_value = ""
-
+		int_number = re.compile("-?\d+")
+		float_number = re.compile("-?\d+\.\d+")  # 匹配负数，浮点数
 		parameter_name = parameter_name
 
 		if ":" in parameter_name:  # get parameter type
 			parameter_name, parameter_type = parameter_name.split(":")
-		# transfer data type
+		# # transfer data type
 		# if not parameter_type:
 		# 	parameter_value = data
 		# elif "int" in parameter_type.lower():
 		# 	parameter_value = int(data)
 		# elif "num" in parameter_type.lower():
-		# 	parameter_value = Decimal(str(data))
+		# 	parameter_value = long(data)
 		# else:
 		# 	parameter_value = data
-		parameter_value = data
+
+		if isinstance(data,unicode):
+			data = data.encode('unicode-escape').decode('string_escape')
+		else:
+			data = str(data)
+		print data
+		print "$#$$$$$$$$$$$$$$"
+		if int_number.match(data):
+			parameter_value = long(data)
+		elif float_number.match(data):
+			parameter_value = float(data)
+		else:
+			parameter_value = data
 
 		return parameter_name, parameter_value
 
@@ -284,7 +298,7 @@ class ExcelToJson(object):
 						self.write_request_into_file(result_folder, excel_file_name, sheet_name, testcase_name, request_params)
 
 if __name__ == "__main__":
-	work_dir = sys.argv[1]
+	work_dir = r"E:\yinxiuwen\yqy_ci\test_case\testcase_template.xls" #sys.argv[1]
 	processor = ExcelToJson(work_dir)
 	processor.get_all_file_request_data()
 
