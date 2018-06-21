@@ -21,8 +21,7 @@ class ExcelToJson(object):
 	max_row_size = 300
 
 	def __init__(self, work_dir):
-		self.current_min = time.strftime('%Y%m%d%H%M',time.localtime(time.time()))
-		self.current_dir = os.path.dirname(__file__)
+		self.current_min = time.strftime('%Y-%m-%d_%H-%M-%S',time.localtime(time.time()))
 		self.work_dir = work_dir
 
 	def read_excel(self, file_path):
@@ -34,7 +33,7 @@ class ExcelToJson(object):
 		all_sheet_data = {}
 
 		if os.path.exists(file_path):
-			if file_path.endswith(".xls"):
+			if file_path.endswith(".xls") and not file_path.startswith("~"):
 				file_name = os.path.basename(file_path)
 				reader = excel_handler.ExcelReader(file_path)
 				sheet_name_list = reader.get_sheets_name() # get all sheets' name
@@ -58,7 +57,6 @@ class ExcelToJson(object):
 							parameter_name_dict = {}  # store parameter name row-number as key, parameter name as value
 							for i in range(len(request_name_row)):  # get all parameter name
 								parameter_name_dict[request_name_row[i]] = self.read_parameter_name(reader, sheet, request_name_row[i])
-
 							for i in range(len(request_name_row)):
 								start_param_row = request_name_row[i]
 								if not i == len(request_name_row)-1:
@@ -71,14 +69,11 @@ class ExcelToJson(object):
 									parameter_name_list = parameter_name_dict[start_param_row]
 									# print row, parameter_name_list
 									testcase_name, request_parameters = self.read_parameter_value(reader, sheet, row, parameter_name_list)
-									# print testcase_name, request_parameters
+									print testcase_name, request_parameters
 									current_sheet_all_parameter[testcase_name] = request_parameters
 
 						all_sheet_data[sheet_name] = current_sheet_all_parameter
-		for key, value in all_sheet_data.items():
-			print key
-			print value
-			print "#######################################"
+
 		return all_sheet_data
 
 	def read_parameter_value(self, reader, sheet, row, parameter_name_list):
@@ -172,8 +167,6 @@ class ExcelToJson(object):
 						level_two_dict[level_one_name].append(each_second_dict)
 						each_second_dict = {}  # clear second dict when reach next second level's start cell
 
-		# print row, level_two_dict
-		# print "$$$$$$$$$$$$$$$$$"
 		return level_two_dict
 
 	def get_all_level_two_index(self, parameter_name_list, level_one_index_list):
@@ -206,14 +199,15 @@ class ExcelToJson(object):
 		if ":" in parameter_name:  # get parameter type
 			parameter_name, parameter_type = parameter_name.split(":")
 		# transfer data type
-		if not parameter_type:
-			parameter_value = data
-		elif "int" in parameter_type.lower():
-			parameter_value = int(data)
-		elif "num" in parameter_type.lower():
-			parameter_value = Decimal(str(data))
-		else:
-			parameter_value = data
+		# if not parameter_type:
+		# 	parameter_value = data
+		# elif "int" in parameter_type.lower():
+		# 	parameter_value = int(data)
+		# elif "num" in parameter_type.lower():
+		# 	parameter_value = Decimal(str(data))
+		# else:
+		# 	parameter_value = data
+		parameter_value = data
 
 		return parameter_name, parameter_value
 
@@ -237,28 +231,30 @@ class ExcelToJson(object):
 
 		return name_list
 
-	def write_request_into_file(self,request_params, sheet_name, file_name):
+	def write_request_into_file(self, result_folder, excel_file_name, sheet_name, testcase_name, request_params):
 		'''
 		@summary: write request param as json
 		:param request_params:
 		:param sheet_name:
 		:param file_name:
+		:param sub_folder_name:
 		'''
-		if request_params and sheet_name and file_name:
-			result_folder = self.create_folder_by_time()
-			result_file = os.path.join(result_folder, file_name.split(".")[0]+".txt")
-			with open(result_file,'a') as f:
-				f.writelines(sheet_name+":\n")
+		if request_params and sheet_name and excel_file_name:
+			result_folder = self.create_folder(result_folder, excel_file_name)
+			result_file = os.path.join(result_folder, sheet_name + ".txt")
+			with open(result_file, 'a') as f:
+				f.writelines(testcase_name+":\n")
 				f.writelines(json.dumps(request_params))
 				f.writelines("\n\n")
 
-			print "Stored {0}'s {1} into {2} successfully!".format(file_name, sheet_name, result_file)
+			print "Stored {0}'s {1} into {2} successfully!".format(sheet_name, testcase_name, result_file)
 
-	def create_folder_by_time(self):
+	def create_folder(self, result_folder, sub_folder_name):
 		'''
 		@summary create folder with time as name
 		'''
-		result_folder = os.path.join(self.current_dir,self.current_min)
+		parent_folder = os.path.join(result_folder, self.current_min)
+		result_folder = os.path.join(parent_folder, sub_folder_name)
 
 		if not os.path.exists(result_folder):
 			os.makedirs(result_folder)
@@ -270,17 +266,28 @@ class ExcelToJson(object):
 		@summary: get all excel files' data
 		:return:
 		'''
+		excel_file_list = []
+		result_folder = ''
+
 		if os.path.exists(self.work_dir):
 			if os.path.isfile(self.work_dir): # input work dir is a single file
-					_ = self.read_excel(self.work_dir)
+				excel_file_list.append(self.work_dir)
+				result_folder = os.path.dirname(self.work_dir)
 			else:
-				files = os.listdir(self.work_dir)
-				for file in files:
-					self.read_excel(os.path.join(self.work_dir,file))
-
+				result_folder = self.work_dir
+				excel_file_list = os.listdir(self.work_dir)
+			for file in excel_file_list:
+				excel_file_name = os.path.basename(file).split(".")[0]
+				all_sheet_data = self.read_excel(os.path.join(self.work_dir, file))
+				for key in all_sheet_data.keys():
+					sheet_name = key
+					for key in all_sheet_data[sheet_name]:
+						testcase_name = key
+						request_params = all_sheet_data[sheet_name][key]
+						self.write_request_into_file(result_folder, excel_file_name, sheet_name, testcase_name, request_params)
 
 if __name__ == "__main__":
-	work_dir = r"E:\yinxiuwen\yqy_ci\test_case\testcase_template.xls"    #sys.argv[1]  #
+	work_dir = r"E:\yinxiuwen\yqy_ci\test_case"    #sys.argv[1]  #
 	processor = ExcelToJson(work_dir)
 	processor.get_all_file_request_data()
 
