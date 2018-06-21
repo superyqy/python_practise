@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 #encoding: utf-8
 '''
-@summary: read api's request parameters and create a dictionary format
+@summary: read api's request parameters as testcase from excel file and store into txt file in json format
 @author：YQY
 @change: created at 2018-06-18 by YQY
+@change: modified at 2018-06-21 implement all main function
 '''
 
 import os
@@ -21,7 +22,7 @@ class ExcelToJson(object):
 	max_row_size = 300
 
 	def __init__(self, work_dir):
-		self.current_min = time.strftime('%Y-%m-%d_%H-%M-%S',time.localtime(time.time()))
+		self.current_time = time.strftime('%Y-%m-%d_%H-%M-%S',time.localtime(time.time()))
 		self.work_dir = work_dir
 
 	def read_excel(self, file_path):
@@ -63,13 +64,9 @@ class ExcelToJson(object):
 									next_param_row = request_name_row[i+1]
 								else:
 									next_param_row = end_empty_row
-								# print start_param_row+1, next_param_row
 								for row in range(start_param_row+1, next_param_row):
-									# row = parameter_name_dict[request_name_row[i]]
 									parameter_name_list = parameter_name_dict[start_param_row]
-									# print row, parameter_name_list
 									testcase_name, request_parameters = self.read_parameter_value(reader, sheet, row, parameter_name_list)
-									print testcase_name, request_parameters
 									current_sheet_all_parameter[testcase_name] = request_parameters
 
 						all_sheet_data[sheet_name] = current_sheet_all_parameter
@@ -247,13 +244,13 @@ class ExcelToJson(object):
 				f.writelines(json.dumps(request_params))
 				f.writelines("\n\n")
 
-			print "Stored {0}'s {1} into {2} successfully!".format(sheet_name, testcase_name, result_file)
+			print "Add testcase: {0} into {1} successfully!".format(testcase_name, result_file)
 
 	def create_folder(self, result_folder, sub_folder_name):
 		'''
 		@summary create folder with time as name
 		'''
-		parent_folder = os.path.join(result_folder, self.current_min)
+		parent_folder = os.path.join(result_folder, self.current_time)
 		result_folder = os.path.join(parent_folder, sub_folder_name)
 
 		if not os.path.exists(result_folder):
@@ -287,7 +284,7 @@ class ExcelToJson(object):
 						self.write_request_into_file(result_folder, excel_file_name, sheet_name, testcase_name, request_params)
 
 if __name__ == "__main__":
-	work_dir = r"E:\yinxiuwen\yqy_ci\test_case"    #sys.argv[1]  #
+	work_dir = sys.argv[1]
 	processor = ExcelToJson(work_dir)
 	processor.get_all_file_request_data()
 
