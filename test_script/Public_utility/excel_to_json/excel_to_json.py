@@ -12,8 +12,11 @@ import sys
 import time
 import json
 import re
-from excel_handler import excel_handler
+import platform
+import excel_handler
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class ExcelToJson(object):
 	request_name = "Test Case Name"  # request parameter start signal
@@ -199,17 +202,17 @@ class ExcelToJson(object):
 		int_number = re.compile("^-?\d+$")  #  匹配整数
 		float_number = re.compile("^-?\d+\.\d+$")  # 匹配负数，浮点数
 
-		if isinstance(data,unicode):
-			data = data.encode('unicode-escape').decode('string_escape')
-		else:
+		if str(data).endswith(".0"):
 			data = str(data)
-			if data.endswith(".0"):
-				data = data.split(".")[0]
+			data = data.split(".")[0]
 
-		if int_number.match(data):
-			parameter_value = long(data)
-		elif float_number.match(data):
-			parameter_value = float(data)
+		if int_number.match(str(data)):
+			parameter_value = long(str(data))
+		elif float_number.match(str(data)):
+			parameter_value = float(str(data))
+		elif isinstance(data,unicode):
+			# data = data.encode('unicode-escape').decode('string_escape')
+			parameter_value = data.encode("utf-8")
 		else:
 			parameter_value = data
 
@@ -243,14 +246,17 @@ class ExcelToJson(object):
 		:param file_name:
 		:param sub_folder_name:
 		'''
+		new_line = "\n"
+		if "windows" == platform.system().lower():
+			new_line = "\r\n"
+
 		if request_params and sheet_name and excel_file_name:
 			result_folder = self.create_folder(result_folder, excel_file_name)
 			result_file = os.path.join(result_folder, sheet_name + ".txt")
 			with open(result_file, 'a') as f:
-				f.writelines(testcase_name+":\n")
-				f.writelines(json.dumps(request_params))
-				f.writelines("\n\n")
-
+				f.writelines(testcase_name+":" +new_line)
+				f.writelines(json.dumps(request_params, encoding='UTF-8', ensure_ascii=False))
+				f.writelines("{0}{0}".format(new_line))
 			print "Add testcase: {0} into {1} successfully!".format(testcase_name, result_file)
 
 	def create_folder(self, result_folder, sub_folder_name):
@@ -265,7 +271,7 @@ class ExcelToJson(object):
 
 		return result_folder
 
-	def get_all_file_request_data(self):
+	def main(self):
 		'''
 		@summary: get all excel files' data
 		:return:
@@ -291,8 +297,8 @@ class ExcelToJson(object):
 						self.write_request_into_file(result_folder, excel_file_name, sheet_name, testcase_name, request_params)
 
 if __name__ == "__main__":
-	work_dir = sys.argv[1]
+	work_dir = r"E:\yinxiuwen\excel_to_json\testcase"  #sys.argv[1]
 	processor = ExcelToJson(work_dir)
-	processor.get_all_file_request_data()
+	processor.main()
 
 
