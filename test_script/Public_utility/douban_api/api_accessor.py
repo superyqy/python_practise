@@ -22,7 +22,7 @@ class APIAccessor(object):
 		self.current_path = os.path.join(os.path.dirname(__file__), 'config')
 		self.read_config()
 
-	def read_config(self,config_name="api_config.ini"):
+	def read_config(self,config_name="config.ini"):
 		'''
 		@summary: read config parameters from config.ini
 		:param config_name:
@@ -47,7 +47,7 @@ class APIAccessor(object):
 			if self.server_ip != "0.0.0.0" and self.port != "0":
 				url = 'http://{0}:{1}/{2}'.format(self.server_ip, self.port, resource_url.lstrip("/"))
 			elif self.url:
-				url = self.url
+				url = self.url+ "/" + resource_url.lstrip("/")
 		else:
 			print "Assemble api's url failed, need to check config.ini!"
 
@@ -55,13 +55,12 @@ class APIAccessor(object):
 
 	def get(self, url, single_parameter='', parameters={}):
 		'''
-        @summary: create GET request
-        @param url: string url
-        @param params: dictionary store input parameters
-        @param auth: tuple store username and password
-        @param cookie: dictionary store cookie information
-        @return: a tuple response, first element is status_code, second is response body
-        '''
+		@summary: create GET request
+		:param url:
+		:param single_parameter:
+		:param parameters:
+		:return:
+		'''
 		status_code = -1   # store returned status code
 		response_body = {}  # store response body in dictionary format
 

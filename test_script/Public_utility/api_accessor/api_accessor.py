@@ -25,7 +25,7 @@ class APIAccessor(object):
 	def __init__(self):
 		self.current_path = os.path.join(os.path.dirname(__file__),'config')
 		conf = ConfigParser.ConfigParser()
-		conf.read(os.path.join(self.current_path,'api_config.ini'))
+		conf.read(os.path.join(self.current_path,'config.ini'))
 		self.server_ip = conf.get('HTTP', 'host')
 		self.port = conf.get('HTTP','port')
 		self.timeout = float(conf.get('HTTP','timeout'))
