@@ -297,7 +297,7 @@ class ExcelToJson(object):
 						self.write_request_into_file(result_folder, excel_file_name, sheet_name, testcase_name, request_params)
 
 if __name__ == "__main__":
-	work_dir = r"E:\yinxiuwen\excel_to_json\testcase"  #sys.argv[1]
+	work_dir = sys.argv[1]
 	processor = ExcelToJson(work_dir)
 	processor.main()
 
