@@ -72,7 +72,7 @@ class APIAccessor(object):
 			except Exception as e:
 				print 'Request failed! URL: {0}, Parameters: {1}, Error: {2}'.format(url, parameters, e)
 		elif single_parameter and not parameters:  # request with single parameter value
-			url = url.rstrip("/") + "/" + single_parameter
+			url = url.rstrip("/") + "/" + str(single_parameter)
 			try:
 				response = requests.get(url, timeout=self.timeout)
 				status_code = response.status_code

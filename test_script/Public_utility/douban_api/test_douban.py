@@ -6,6 +6,9 @@
 @change: 2018-06-22 create script
 '''
 import os
+import re
+import json
+import time
 import excel_handler
 import api_accessor
 
@@ -57,6 +60,31 @@ class ReadExcel(object):
 
 		return all_sheet_data
 
+	def transfer_data_type(self, data):
+		'''
+		@summary transfer number and float data format
+		:param data:
+		:return:
+		'''
+		parameter_value = ""
+		int_number = re.compile("^-?\d+$")  #  匹配整数
+		float_number = re.compile("^-?\d+\.\d+$")  # 匹配负数，浮点数
+
+		if str(data).endswith(".0"):  # transfer unicode data to string and split .0
+			data = str(data)
+			data = data.split(".")[0]
+
+		if int_number.match(str(data)):
+			parameter_value = int(str(data))
+		elif float_number.match(str(data)):
+			parameter_value = float(str(data))
+		elif isinstance(data,unicode):
+			parameter_value = data.encode("utf-8")
+		else:
+			parameter_value = data
+
+		return  parameter_value
+
 	def get_base_info(self, reader, sheet, start_row, end_row):
 		'''
 		@summary: get request base info
@@ -74,9 +102,9 @@ class ReadExcel(object):
 				name = reader.get_cell(sheet, row, 1).lower()
 				value = reader.get_cell(sheet, row, 2)
 				if "url" == name:
-					url = value
+					url = self.transfer_data_type(value)
 				elif "method" == name:
-					method = value
+					method = self.transfer_data_type(value)
 				if url and method:
 					break
 
@@ -95,8 +123,8 @@ class ReadExcel(object):
 
 		if reader and sheet and start_row > 0 and start_row < end_row:
 			for row in range(start_row, end_row):
-				name = reader.get_cell(sheet, row, 1)
-				value = reader.get_cell(sheet, row, 2)
+				name = self.transfer_data_type(reader.get_cell(sheet, row, 1))
+				value =  self.transfer_data_type(reader.get_cell(sheet, row, 2))
 				if name and value:
 					request_parameters[name] = value
 
@@ -115,11 +143,11 @@ class ReadExcel(object):
 
 		if reader and sheet and start_row > 0 and start_row < end_row:
 			for row in range(start_row, end_row):
-				name = reader.get_cell(sheet, row, 1)
-				type = reader.get_cell(sheet, row, 2)
-				value = reader.get_cell(sheet, row, 3)
+				name = self.transfer_data_type(reader.get_cell(sheet, row, 1))
+				type = self.transfer_data_type(reader.get_cell(sheet, row, 2))
+				value =  self.transfer_data_type(reader.get_cell(sheet, row, 3))
 				if name and type and value:
-					response_parameters[name] = [type, value]
+					response_parameters[name] = [type, value, row]
 
 		return response_parameters
 
@@ -172,7 +200,7 @@ class ReadExcel(object):
 		return all_data
 
 
-class DoubanTest(object):
+class AccessAPI(object):
 	'''
 	@summary: create testcase for douban api test
 	'''
@@ -192,7 +220,6 @@ class DoubanTest(object):
 		request_type = request_type.upper()
 		if 'GET' == request_type:
 			url = self.api_operator.assemble_url(url_part)
-			print url
 			status_code, response_body = self.api_operator.get(url, single_parameter=single_parameter, parameters=parameters)
 		elif 'POST' == request_type:
 			url = self.api_operator.assemble_url(url_part)
@@ -207,7 +234,7 @@ class DoubanTest(object):
 		@return: bool result
 		'''
 		result = False
-		request_success = 200
+		request_success = 200  # this can be changed by situation
 
 		if request_success == status_code:
 			result = True
@@ -217,18 +244,133 @@ class DoubanTest(object):
 		return result
 
 
-def main():
-	url = '/v2/movie/subject'
-	tester = DoubanTest()
-	status_code,response_body = tester.access_api(url_part=url,single_parameter="1304102")
-	print status_code
-	result = response_body['casts']
-	for actor in result:
-		print actor["id"]
+def compare_response_parameter(respone_parameter, standard_parameter, compare_type):
+	'''
+	@summary: compare response parameter
+	:param respone_parameter:
+	:param standard_parameter:
+	:param compare_type:
+	:return:
+	'''
+	result = "Failed"
 
+	compare_type = compare_type.lower()
+	if compare_type == "equal":
+		if str(respone_parameter) == str(standard_parameter):
+			result = "Pass"
+	elif compare_type == "not equal":
+		if str(respone_parameter) != str(standard_parameter):
+			result = "Pass"
+	elif compare_type == 'less than':
+		if float(respone_parameter) < float(standard_parameter):
+			result = "Pass"
+	elif compare_type == 'greater than':
+		if float(respone_parameter) > float(standard_parameter):
+			result = "Pass"
+	elif compare_type == 'in':
+		if str(respone_parameter) in str(standard_parameter):
+			result = "Pass"
+	elif compare_type == 'not in':
+		if str(respone_parameter) not in str(standard_parameter):
+			result = "Pass"
+
+	return result
+
+def get_value_with_mutiple_level(check_key, target_dict, level):
+	result_value = ""
+
+	if 1<level and isinstance(check_key, list) and isinstance(target_dict, dict):
+		if 2 == level:
+			if check_key[0] in target_dict.keys():
+				for item in target_dict[check_key[0]]:
+					if check_key[1] in item.keys():
+						result_value = item[check_key[1]]
+						break
+		elif 3 == level:
+			if check_key[0] in target_dict.keys():
+				for item in target_dict[check_key[0]]:
+					if check_key[1] in item.keys():
+						for data in item[check_key[1]]:
+							if check_key[2] in data.keys():
+								result_value = data[check_key[2]]
+								break
+
+	return result_value
+
+def create_folder():
+	'''
+	@summary create folder with time as name
+	'''
+	result_folder = os.path.join(os.path.dirname(__file__), 'testresult')
+	current_time = time.strftime('%Y-%m-%d_%H-%M-%S',time.localtime(time.time()))
+	result_folder = os.path.join(result_folder, current_time)
+
+	if not os.path.exists(result_folder):
+		os.makedirs(result_folder)
+
+	return result_folder
+
+def execute_testcase():
+	'''
+	@summary: read testcase from excel, accesss api, compare result
+	:return: dictionary, all_file_result, store all file's all sheet's result
+	'''
+	all_file_result = {}  # excel file name as key, each file's all sheet result as value
+	read_excel = ReadExcel()
+	access_api = AccessAPI()
+
+	all_files_data = read_excel.main()  #  get all testcase from excel testcases
+	if all_files_data:
+		for each_file in all_files_data.keys():
+			each_file_result = {}
+			for sheet_name in all_files_data[each_file].keys():  # check each sheet, one sheet is one testcase
+				all_response_compare_result = {}
+				testcase =  all_files_data[each_file][sheet_name]
+				url = testcase[0]
+				request_type = testcase[1]
+				response_parameters_dict = testcase[3]
+				status_code = -1
+				response_body = {}
+				if 1 == len(testcase[2].items()):  # accesss api with one parameter
+					single_param = testcase[2].values()[0]
+					status_code, response_body = access_api.access_api(url_part=url, single_parameter=single_param,request_type= request_type)
+				elif 1 < len(testcase[2].items()): # accesss api with more than one parameter
+					status_code,response_body = access_api.access_api(url_part=url, parameters=testcase[2].values(), request_type=request_type)
+				if access_api.check_status_code(status_code):
+					for key in response_parameters_dict.keys():
+						standard_parameter = response_parameters_dict[key][1]
+						compare_type = response_parameters_dict[key][0]
+						row = response_parameters_dict[key][2]
+						if ":" in key:  # key has mutiple levels
+							key_with_level = key.split(":")
+							respone_parameter = get_value_with_mutiple_level(key_with_level,response_body, len(key_with_level))
+							all_response_compare_result[row] = compare_response_parameter(respone_parameter,standard_parameter,compare_type)
+						else:  # key has only one level
+							if key in response_body.keys():
+								respone_parameter = response_body[key]
+								all_response_compare_result[row] = compare_response_parameter(respone_parameter, standard_parameter, compare_type)
+							else:
+								all_response_compare_result[row] = "Can't find response parameter"
+				each_file_result[sheet_name] = all_response_compare_result
+			all_file_result[each_file] = each_file_result
+
+		return all_file_result
+
+def write_result_into_excel(all_file_result):
+	'''
+	@summary: 本来应该以testcase.xls为模板，存储在testresult文件夹中，但周末时间不够写完后续excel存储相关代码，只能先以Json形式存为TXT
+	:param all_file_result:
+	'''
+	if all_file_result:
+		result_folder = create_folder()
+		result_file = os.path.join(result_folder, 'result.txt')
+		with open(result_file,'w') as f:
+			f.writelines(json.dumps(all_file_result))
+
+
+def run():
+	all_file_result = execute_testcase()
+	write_result_into_excel(all_file_result)
 
 if __name__ == "__main__":
-
-	reader = ReadExcel()
-	data = reader.main()
-	print data
+	run()
