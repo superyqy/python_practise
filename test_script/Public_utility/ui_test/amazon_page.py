@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 #encoding: utf-8
+'''
+@summary: page instance for amazon pages
+@author: YQY
+@change: 2018-06-23 create script
+'''
+
 import sys
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -16,10 +22,19 @@ class AmazonMainPage(Page):
 	submit_button = (By.XPATH, '//*[@id="nav-search"]/form/div[2]/div/input')
 
 	def input_book_name(self, book_name):
+		'''
+		@summary: input book name in search box
+		:param book_name:
+		:return:
+		'''
 		book_name = book_name.decode()
 		self.locate_element(*self.search_box).send_keys(book_name)
 
 	def click_to_search(self):
+		'''
+		@summary: click search botton
+		:return:
+		'''
 		try:
 			self.locate_element(*self.submit_button).click()
 			return True
@@ -33,6 +48,11 @@ class BookListPage(Page):
 	test_book = (By.XPATH, '//*[@id="result_0"]/div/div[3]/div[1]/a/h2')
 
 	def click_to_open_detail_page(self, book_title):
+		'''
+		@summary: open book detail page from book list page
+		:param book_title:
+		:return:
+		'''
 		current_window = None
 		if self.check_element_exist(*self.test_book):
 			if book_title == self.locate_element(*self.test_book).text:
@@ -51,15 +71,28 @@ class BookDetailPage(Page):
 	price = (By.XPATH, '//*[@id="hlb-subcart"]/div[1]/span/span[2]')
 
 	def get_product_title(self,current_window):
+		'''
+		@summary:get book title
+		:param current_window:
+		:return:
+		'''
 		self.switch_window(current_window)
 		element = self.locate_element(*self.test_book_name)
 
 		return element.text
 
 	def add_into_cart(self):
+		'''
+		@summary: add book into cart
+		:return:
+		'''
 		self.locate_element(*self.add_cart_button).click()
 
 	def get_result_from_cart(self):
+		'''
+		@summary: get result text and price from cart page
+		:return:
+		'''
 		result_text = ''
 		result_price = ''
 
@@ -71,6 +104,13 @@ class BookDetailPage(Page):
 		return result_text, result_price
 
 def search_book(url, driver, book_name):
+	'''
+	@summary: search book
+	:param url:
+	:param driver:
+	:param book_name:
+	:return:
+	'''
 	amazon_main_page = AmazonMainPage(driver, url)
 	amazon_main_page.open_page()
 	amazon_main_page.input_book_name(book_name)
@@ -79,12 +119,27 @@ def search_book(url, driver, book_name):
 	return result
 
 def open_book_detail_page(url, driver, book_title):
+	'''
+	@summary: open book detail page
+	:param url:
+	:param driver:
+	:param book_title:
+	:return:
+	'''
 	book_list_page = BookListPage(driver, url)
 	current_window = book_list_page.click_to_open_detail_page(book_title)
 
 	return current_window
 
 def add_into_cart(url, driver, current_window, title):
+	'''
+	@summary: add book into cart
+	:param url:
+	:param driver:
+	:param current_window:
+	:param title:
+	:return:
+	'''
 	result_text = ''
 	result_price = ''
 
@@ -97,12 +152,20 @@ def add_into_cart(url, driver, current_window, title):
 	return result_text, result_price
 
 def test_search_book(url, book, book_title):
+	'''
+	@summary: the whole process from search book and enter detail page and add into cart
+	:param url:
+	:param book:
+	:param book_title:
+	:return: string: result text and price
+	'''
 	result_text = ''
 	result_price = ''
 
 	driver = webdriver.Firefox()
 	driver.implicitly_wait(30)  # setup implicitly wait time
 	driver.maximize_window()
+
 	try:
 		result = search_book(url, driver, book)   # open amazon main page and search book
 		if result:

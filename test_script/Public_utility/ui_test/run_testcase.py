@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 #encoding: utf-8
+'''
+@summary: run testcases with unittest framework
+@author: YQY
+@change: 2018-06-23 create script
+'''
 import unittest
 import amazon_page
 
@@ -12,6 +17,9 @@ class RunTestcase(unittest.TestCase):
 		pass
 
 	def test_add_book_into_cart(self):
+		'''
+		@summary: testcase of search book>enter detail page>add into cart>check result
+		'''
 		url = "https://www.amazon.cn"
 		book = "软件测试"
 		book_title = "软件测试(原书第2版)"
