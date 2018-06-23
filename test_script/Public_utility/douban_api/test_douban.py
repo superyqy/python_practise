@@ -125,7 +125,7 @@ class ReadExcel(object):
 			for row in range(start_row, end_row):
 				name = self.transfer_data_type(reader.get_cell(sheet, row, 1))
 				value =  self.transfer_data_type(reader.get_cell(sheet, row, 2))
-				if name and value:
+				if name and value != None:
 					request_parameters[name] = value
 
 		return request_parameters
@@ -320,6 +320,7 @@ def execute_testcase():
 	access_api = AccessAPI()
 
 	all_files_data = read_excel.main()  #  get all testcase from excel testcases
+
 	if all_files_data:
 		for each_file in all_files_data.keys():
 			each_file_result = {}
@@ -335,7 +336,7 @@ def execute_testcase():
 					single_param = testcase[2].values()[0]
 					status_code, response_body = access_api.access_api(url_part=url, single_parameter=single_param,request_type= request_type)
 				elif 1 < len(testcase[2].items()): # accesss api with more than one parameter
-					status_code,response_body = access_api.access_api(url_part=url, parameters=testcase[2].values(), request_type=request_type)
+					status_code,response_body = access_api.access_api(url_part=url, parameters=testcase[2], request_type=request_type)
 				if access_api.check_status_code(status_code):
 					for key in response_parameters_dict.keys():
 						standard_parameter = response_parameters_dict[key][1]
@@ -366,7 +367,7 @@ def write_result_into_excel(all_file_result):
 		result_file = os.path.join(result_folder, 'result.txt')
 		with open(result_file,'w') as f:
 			f.writelines(json.dumps(all_file_result))
-
+		print "Test completed, API Test result stored in: {0}".format(result_file)
 
 def run():
 	all_file_result = execute_testcase()
