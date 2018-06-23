@@ -24,7 +24,7 @@ class RunTestcase(unittest.TestCase):
 		book = "软件测试"
 		book_title = "软件测试(原书第2版)"
 		standard_text = "商品已加入购物车"
-		standard_price = "28"
+		standard_price = "20.40"
 		result_text, result_price = amazon_page.test_search_book(url, book, book_title)
 		self.assertEqual(result_text, standard_text, "add to cart message doesn't match!")
 		self.assertEqual(float(standard_price), float(result_price), "add to cart price doesn't match!")
