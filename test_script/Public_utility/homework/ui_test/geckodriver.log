@@ -1,0 +1,13 @@
+1529749541744	geckodriver	INFO	geckodriver 0.19.1
+1529749541760	geckodriver	INFO	Listening on 127.0.0.1:54324
+1529749544759	mozrunner::runner	INFO	Running command: "d:\\Program Files\\Mozilla Firefox\\firefox.exe" "-marionette" "-profile" "C:\\Users\\superyoo\\AppData\\Local\\Temp\\rust_mozprofile.Jgx4H8wYMsY4"
+Unable to read VR Path Registry from C:\Users\superyoo\AppData\Local\openvr\openvrpaths.vrpath
+Unable to read VR Path Registry from C:\Users\superyoo\AppData\Local\openvr\openvrpaths.vrpath
+Unable to read VR Path Registry from C:\Users\superyoo\AppData\Local\openvr\openvrpaths.vrpath
+Unable to read VR Path Registry from C:\Users\superyoo\AppData\Local\openvr\openvrpaths.vrpath
+Unable to read VR Path Registry from C:\Users\superyoo\AppData\Local\openvr\openvrpaths.vrpath
+1529749556147	Marionette	INFO	Listening on port 54336
+1529749556660	Marionette	WARN	TLS certificate errors will be ignored for this session
+[Parent 8448, Gecko_IOThread] WARNING: pipe error: 109: file z:/build/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346
+ line 1: TypeError: frameElement is null
+[Child 16824, Chrome_ChildThread] WARNING: pipe error: 109: file z:/build/build/src/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 346

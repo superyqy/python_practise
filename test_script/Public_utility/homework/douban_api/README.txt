@@ -6,7 +6,7 @@ API返回是否正确，并将每个用例结果转换为Json格式并存储在TXT文本中（后续将使用test
 个response parameter不是pass, Test Result字段就是Fail, 但由于周末时间匆忙，暂无时间来实现写excel的功能，所以目前只是展示思路）
 应用场景：批量API用例检查
 
-开发脚本：Python
+开发脚本相关：Python + xlrd + requests 
 
 
 前提：
@@ -15,7 +15,7 @@ API返回是否正确，并将每个用例结果转换为Json格式并存储在TXT文本中（后续将使用test
 3.避免未知错误，请传入excel文件名及所在路径使用英文
 
 
-脚本使用方法：  python run_testcase.py
+脚本使用方法：  python test_douban.py
 
 脚本输出：
 自动创建文件夹层级： 时间\testresult
