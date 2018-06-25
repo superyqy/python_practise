@@ -1,7 +1,7 @@
 工具名：douban API自动化测试框架
 作者：殷秀文
 创建时间：2018-06-23
-主要功能：遍历目标文件夹，读取.xls后缀的excel文件，将除开template的其他sheet中的API测试用例读取URL,Method, request parameter, to be check response parameter, 调用API访问接口，验证
+主要功能：采用数据驱动模式，遍历目标文件夹，读取.xls后缀的excel文件，将除开template的其他sheet中的API测试用例读取URL,Method, request parameter, to be check response parameter, 调用API访问接口，验证
 API返回是否正确，并将每个用例结果转换为Json格式并存储在TXT文本中（后续将使用testcase.xls作为模板来生成测试结果，给每个sheet用例的每个response参数作检查并返回成功还是失败，只要有一
 个response parameter不是pass, Test Result字段就是Fail, 但由于周末时间匆忙，暂无时间来实现写excel的功能，所以目前只是展示思路）
 应用场景：批量API用例检查
