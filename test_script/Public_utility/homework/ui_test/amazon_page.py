@@ -7,6 +7,7 @@
 '''
 
 import sys
+import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from page import Page
