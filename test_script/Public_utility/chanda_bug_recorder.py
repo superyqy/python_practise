@@ -10,7 +10,7 @@ Create a common script fot get bug list from 禅道 bug_lst and generate html fi
 import json
 import requests
 import all_config
-import html_generator
+from report_generator import html_generator
 
 
 def create_session():
