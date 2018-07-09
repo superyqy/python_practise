@@ -9,7 +9,7 @@ refered link: https://blog.csdn.net/u011054333/article/details/70151857/
 '''
 import os
 try:
-	from flask import Flask,jsonify,request
+	from flask import Flask, jsonify, request
 except:
 	os.system("pip install flask")
 	from flask import Flask, jsonify, request
@@ -18,28 +18,6 @@ method_err = {
 	"code": 301,
 	"msg": "请求方式不正确，只支持post请求",
 	"other":"test123"
-}
-# 参数错误
-param_err = {
-	"code": 302,
-	"msg": "请求参数错误，请检查入参"
-}
-# 余额不足
-money_err = {
-	"code": 303,
-	"msg": "账户余额不足"
-}
-
-# 价格错误
-price_err = {
-	"code": 304,
-	"msg": "价格不合法"
-}
-
-# 用户不存在
-user_err = {
-	"code": 305,
-	"msg": "该用户不存在"
 }
 
 # 成功的信息
@@ -64,6 +42,19 @@ db_err = {
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+
+@app.route("/")
+def root():
+	return "Hello Flask"
+
+@app.route("/logger")
+def test_log():     # app自带logging功能
+	app.logger.debug("test logger")
+	return 'test log'
+
+@app.route("/user/<int:user_id>")   #URL中带参数值传递
+def request_with_param(user_id):
+	return str(user_id)  # 返回值不能是int，否则页面会报错
 
 
 @app.route('/query', methods = ["GET"])
