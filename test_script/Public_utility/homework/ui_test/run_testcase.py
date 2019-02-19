@@ -6,7 +6,6 @@
 @change: 2018-06-23 create script
 '''
 import unittest
-import amazon_page
 from testcases import *
 
 

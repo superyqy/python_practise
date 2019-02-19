@@ -3,7 +3,7 @@
 '''
 @summary: run testcases with unittest framework
 @author: YQY
-@change: 2018-06-23 create script
+@change: 2019-02-19 create script
 '''
 from selenium import webdriver
 from amazon_page import AmazonMainPage
