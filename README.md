@@ -18,7 +18,7 @@ Public functions:
 4. excel_handler: 基于Python xlrd和xlwt的读写xls格式Excel表格的公共类
 5. excel_to_json: 用于将写在Excel表格中的API测试用例复杂的request自动组装为json字符串的格式
 6. homework: 基于selenium webdriver的UI测试、基于excel+requests的API测试
-7. remove_connect: paramiko以及socket UDP的远程连接
+7. remote_connect: paramiko以及socket UDP的远程连接
 8. report_generator: 生成HTML格式报表
 9. set_loggig: 封装了python logging模块，用于日志记录
 10. xml_analyzer: 解析XML
